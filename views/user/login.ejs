@@ -1,0 +1,64 @@
+<section class="bg-light p-3 p-md-4 p-xl-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7 col-xl-6 col-xxl-5">
+          <div class="card border border-light-subtle rounded-4">
+            <div class="card-body p-3 p-md-4 p-xl-5">
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-5">
+                    <div class="text-center mb-4">
+                      <a href="#!">
+                        <img src="https://scontent.furt2-1.fna.fbcdn.net/v/t39.30808-6/278083398_346217154230649_7691666938566668762_n.png?_nc_cat=102&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeHbPtNkS_GynkkV0iv-HEmoPB69xMng1tg8Hr3EyeDW2KRsjaB6e6Gpw0qI_5GHTnOFR-Ku2pYH1zDC69TjSUBk&_nc_ohc=X4-B8s67_3EAX-87ogf&_nc_oc=AQlY9_hmi-TBJpKEbRFPG7vYH_QCnTeX5LazMJtM_eFdWHeR4KBixf8OwZG_F9xFkWom654tMN4mPe0nZhNIqc6V&_nc_ht=scontent.furt2-1.fna&oh=00_AfATx2odpC5pCAa1SK3kIDdoMUBXxiuGmQyjWThns9NMfQ&oe=65F8B611" alt="BootstrapBrain Logo" width="100" height="100">
+                      </a>
+                    </div>
+                    <h4 class="text-center">เข้าสู่ระบบ</h4>
+                  </div>
+                  <% if (error && error.length) { %>
+                    <div class="alert alert-danger">
+                        <%= error[0] %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  <% } %>
+                  <% if (success && success.length) { %>
+                    <div class="alert alert-success">
+                        <%= success[0] %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <% } %>
+                </div>
+              </div>
+              <form method="POST" action="/user/login">
+                <div class="row gy-3 overflow-hidden">
+                  <div class="col-12">
+                    <div class="form-floating mb-3">
+                      <input type="text" class="form-control" name="username" id="username" value="" placeholder="Password" required>
+                      <label for="username" class="form-label">ชื่อผู้ใช้</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-floating mb-3">
+                      <input type="password" class="form-control" name="password" id="password" value="" placeholder="Password" required>
+                      <label for="password" class="form-label">รหัสผ่าน</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="d-grid">
+                      <button class="btn bsb-btn-xl btn-dark" type="submit">เข้าสู่ระบบ</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <div class="row">
+                <div class="col-12">
+                  <hr class="mt-5 mb-4 border-secondary-subtle">
+                  <div class="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-end">
+                    <p>ยังไม่ได้เป็นสมาชิก?</p>
+                    <a href="/user/register" class="link-secondary text-decoration-none">สมัครสมาชิก</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

@@ -1,0 +1,36 @@
+<header class="header py-5" style="background-image: url('https://t4.ftcdn.net/jpg/04/55/95/33/360_F_455953386_k0ORlmUPXRVaHRcZ0Xk9hTvrgUdsgTAt.jpg');">
+  <div class="container px-4 px-lg-5 my-5">
+    <div class="text-center text-dark">
+      <h1 class="display-4 fw-bolder">Amber Grape Farm</h1>
+      <p class="lead fw-normal text-dark-50 mb-0">ศูนย์วิจัย Amber Grape Farm</p>
+    </div>
+  </div>
+</header>
+
+
+<div class="container mt-4 col-md-10">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4">
+    <% products.forEach(product => { %>
+      <div class="col mb-4">
+        <div class="card h-100">
+          <div class="position-relative">
+            <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
+            <div class="overlay">
+              <a href="/product/<%= product._id %>"><div class="overlay-text text-white">รายละเอียดเพิ่มเติม</div></a>
+            </div>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title"><%= product.productName %></h5>
+            <p class="card-text"><%= product.category %></p>
+            <p class="card-text">จำนวนสินค้า: <%= product.stockQuantity %></p>
+            <h6 class="card-price">$<%= product.price.toFixed(2) %></h6>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="btn">Add to Cart</a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
