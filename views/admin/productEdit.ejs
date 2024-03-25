@@ -1,0 +1,53 @@
+<div class="container">
+    <h1 class="text-center mt-5 mb-4">แก้ไขสินค้า</h1>
+    <form action="/admin/edit-product/<%= product._id %>" method="POST" class="mx-auto" style="max-width: 400px;">
+        <div class="mb-3">
+            <label for="productName" class="form-label">Product Name:</label>
+            <input type="text" id="productName" name="productName" class="form-control" value="<%= product.productName %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="price" class="form-label">Price:</label>
+            <input type="number" id="price" name="price" class="form-control" value="<%= product.price %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea id="description" name="description" class="form-control" required><%= product.description %></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="stockQuantity" class="form-label">Stock Quantity:</label>
+            <input type="number" id="stockQuantity" name="stockQuantity" class="form-control" value="<%= product.stockQuantity %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="image" class="form-label">Image URL:</label>
+            <input type="text" id="image" name="image" class="form-control" value="<%= product.image %>">
+        </div>
+
+        <div class="mb-3">
+            <label for="status" class="form-label">Status:</label>
+            <select id="status" name="status" class="form-select">
+                <option value="พร้อมขาย" <%= product.status ==="พร้อมขาย" ? "selected" : "" %>>พร้อมขาย</option>
+                <option value="ไม่พร้อมขาย" <%= product.status === "ไม่พร้อมขาย" ? "selected" : "" %>>ไม่พร้อมขาย</option>
+                <option value="เลิกขาย" <%= product.status === "เลิกขาย" ? "selected" : "" %>>เลิกขาย</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="sizes" class="form-label">Size:</label>
+            <input type="text" id="sizes" name="sizes" class="form-control" value="<%= product.sizes.join(', ') %>">
+        </div>
+        
+        <div class="mb-3">
+            <label for="categorySelect" class="form-label">Select Category:</label>
+            <select id="categorySelect" name="category" class="form-select">
+                <option value="">-- Select Category --</option>
+                    <option value="<%= product.category %>" <%= product.category === product.category ? "selected" : "" %>><%= product.category %></option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-dark">แก้ไขสินค้า</button>
+    </form>
+</div>

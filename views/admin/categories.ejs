@@ -1,0 +1,69 @@
+<div class="container">
+    <% if (error && error.length) { %>
+        <div class="alert alert-danger">
+            <%= error[0] %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      <% if (success && success.length) { %>
+        <div class="alert alert-success">
+            <%= success[0] %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <form action="/admin/add-category" method="POST" class="mx-auto mb-3">
+        <div class="d-flex justify-content-end mb-3 mt-4">
+            <div class="col-auto me-2">
+                <label for="categoryName" class="visually-hidden mb-2">ชื่อหมวดหมู่:</label>
+                <input type="text" id="categoryName" name="categoryName" class="form-control" placeholder="ชื่อหมวดหมู่" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark">เพิ่มหมวดหมู่</button>
+            </div>
+        </div>
+    </form>
+    
+    <!-- ตารางหมวดหมู่ -->
+    <table class="table mt-4 mb-0 bg-white">
+        <!-- ส่วนหัวตาราง -->
+        <thead class="bg-light">
+            <tr>
+                <th>รหัสหมวดหมู่</th>
+                <th>ชื่อหมวดหมู่</th>
+                <th>จำนวนสินค้า</th>
+                <th>ลบ</th>
+            </tr>
+        </thead>
+        <!-- ส่วนเนื้อหาตาราง -->
+        <tbody>
+            <% if (categories.length === 0) { %>
+                <tr>
+                    <td colspan="4">ไม่มีหมวดหมู่อยู่</td>
+                </tr>
+            <% } else { %>
+                <% categories.forEach(category => { %>
+                    <tr>
+                        <td>
+                            <p class="fw-normal"><%= category._id %></p>
+                        </td>
+                        <td>
+                            <p class="fw-normal"><%= category.categoryName %></p>
+                        </td>
+                        <td>
+                            <p class="fw-normal"><%= category.products.length %></p>
+                        </td>
+                        <td>
+                            <form id="deleteForm<%= category._id %>" action="/admin/delete-category/<%= category._id %>" method="POST" style="display: none;">
+                                <input type="hidden" name="_method" value="DELETE">
+                            </form>
+                            <button class="btn btn-danger" onclick="event.preventDefault(); if(confirm('คุณต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) { document.getElementById('deleteForm<%= category._id %>').submit(); }">
+                                ลบ
+                            </button>
+                        </td>
+                        
+                    </tr>
+                <% }) %>
+            <% } %>
+        </tbody>
+    </table>
+</div>

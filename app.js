@@ -8,13 +8,20 @@ const ejs = require('ejs');
 const expressLayout = require('express-ejs-layouts');
 const flash = require('connect-flash');
 const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
+const MongoStore = require('connect-mongo');
 
 // Model
-const Product = require('./models/product');
+const Product = require('./models/Product');
+const User = require('./models/User');
+const Category = require('./models/Category');
 
 //Routes 
-const userRoutes = require('./routes/auth');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/Admin');
+
+
 
 const mongoDB = process.env.MONGO_URL;
 
@@ -35,14 +42,54 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(flash());
 
+const mongoStore = MongoStore.create({
+    mongoUrl: process.env.MONGO_URL,
+    ttl: 14 * 24 * 60 * 60, 
+});  
+
+
+// ตั้งค่า passport-local strategy
+passport.use(new LocalStrategy(
+    async (username, password, done) => {
+        try {
+          const user = await User.findOne({ username: username });
+          if (!user) {
+            return done(null, false, { message: 'Incorrect username.' });
+          }
+          if (!user.validPassword(password)) {
+            return done(null, false, { message: 'Incorrect password.' });
+          }
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
+      }
+));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+  
+passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await User.findById(id);
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  });
+
+// session login logout
 app.use(session({
-    secret: process.env.SEC_KEY, // Change this to a random secret key
+    secret: process.env.SEC_KEY,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: true,
+    store: mongoStore,
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 // can access in any template
 app.use((req,res,next)=>{
@@ -62,18 +109,21 @@ app.set('layout extractScripts', true);
 app.set('layout extractStyles', true);
 app.set('layout', 'layout/layout');
 
-app.use('/user', userRoutes);
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 
 
 app.get('/', async(req, res) => {
-    try{
-        const products = await Product.find();
-        res.render('index', {products: products, req:req });
+    try {
+      const products = await Product.find().populate('category');
+
+        res.render('index', { products: products, req: req });
     } catch (error) {
         console.log('การดึงข้อมูลผิดพลาด', error);
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 
 app.listen(process.env.PORT, () => {

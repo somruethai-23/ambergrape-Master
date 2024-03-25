@@ -7,6 +7,18 @@
   </div>
 </header>
 
+<% if (error && error.length) { %>
+  <div class="alert alert-danger">
+      <%= error[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+<% if (success && success.length) { %>
+  <div class="alert alert-success">
+      <%= success[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
 
 <div class="container mt-4 col-md-10">
   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4">
@@ -21,7 +33,11 @@
           </div>
           <div class="card-body">
             <h5 class="card-title"><%= product.productName %></h5>
-            <p class="card-text"><%= product.category %></p>
+            <% if (product.category) { %>
+              <p class="card-text"><%= product.category.categoryName %></p>
+            <% } else { %>
+              <p class="card-text">ไม่มีหมวดหมู่</p>
+            <% } %>
             <p class="card-text">จำนวนสินค้า: <%= product.stockQuantity %></p>
             <h6 class="card-price">$<%= product.price.toFixed(2) %></h6>
           </div>

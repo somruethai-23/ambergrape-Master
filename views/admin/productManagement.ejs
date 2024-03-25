@@ -1,0 +1,63 @@
+<div class="container mt-4">
+  <div class="row mb-3">
+      <div class="col">
+          <form action="/admin/add-product" method="GET">
+              <button type="submit" class="btn btn-success btn-lg btn-block">เพิ่มสินค้า</button>
+          </form>
+      </div>
+      <div class="col">
+          <form action="/admin/categories" method="GET">
+              <button type="submit" class="btn btn-success btn-lg btn-block">เพิ่มหมวดหมู่</button>
+          </form>
+      </div>
+      <div class="col">
+          <form action="/admin/delete-all-products" method="POST">
+              <button type="submit" class="btn btn-danger btn-lg btn-block">ลบสินค้าทั้งหมด</button>
+          </form>
+      </div>
+  </div>
+  <table class="table bg-white">
+      <thead class="bg-light">
+          <tr>
+              <th>รหัสสินค้า</th>
+              <th>หมวดหมู่</th>
+              <th>จำนวนสต็อก</th>
+              <th>สถานะ</th>
+              <th>แก้ไข</th>
+          </tr>
+      </thead>
+      <% products.forEach(product => { %>
+      <tbody>
+          <tr>
+              <td>
+                  <div class="d-flex align-items-center">
+                      <img src="<%= product.image %>" alt="<%= product.productName %>" style="width: 45px; height: 45px" class="rounded-circle">
+                      <div class="ms-3">
+                          <p class="fw-bold mb-1"><%= product.productName %></p>
+                          <p class="text-muted mb-0"><%= product._id %></p>
+                      </div>
+                  </div>
+              </td>
+              <td>
+                  <p class="fw-normal"><%= product.category.categoryName %></p>
+              </td>
+              <td>
+                  <p class="fw-normal"><%= product.stockQuantity %></p>
+              </td>
+              <td>
+                  <% if(product.status ==="พร้อมขาย") { %>
+                  <span class="badge rounded-pill bg-success">ใช้งานอยู่</span>
+                  <% } if (product.status ==="ไม่พร้อมขาย") { %>
+                  <span class="badge rounded-pill bg-warning">ไม่พร้อมขาย</span>
+                  <% } if (product.status ==="เลิกขาย") { %>
+                  <span class="badge rounded-pill bg-danger">เลิกขาย</span>
+                  <% } %>
+              </td>
+              <td>
+                  <a href="/admin/edit-product/<%= product._id %>" class="btn btn-link btn-sm btn-rounded">แก้ไข</a>
+              </td>
+          </tr>
+      </tbody>
+      <% }) %>
+  </table>
+</div>

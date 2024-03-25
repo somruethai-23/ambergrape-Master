@@ -26,7 +26,7 @@ const productSchema = new mongoose.Schema(
             enum: ["พร้อมขาย", "ไม่พร้อมขาย", "เลิกขาย"],
             default: "พร้อมขาย",
         },
-        size: [{
+        sizes: [{
             type: String,
         }],        
         createdAt: {
@@ -34,7 +34,8 @@ const productSchema = new mongoose.Schema(
             default: Date.now
         },
         category: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Category',
         },
         tags: [
             {
