@@ -2,7 +2,7 @@
     <h1 class="text-center mt-5 mb-4">เพิ่มสินค้า</h1>
     <form action="/admin/add-product" method="POST" class="mx-auto" style="max-width: 400px;" enctype="multipart/form-data">
         <div class="mb-3">
-            <label for="productName" class="form-label"> ชื่อสินค้า:</label>
+            <label for="productName" class="form-label">ชื่อสินค้า:</label>
             <input type="text" id="productName" name="productName" class="form-control" required>
         </div>
 
@@ -14,7 +14,7 @@
         <div class="mb-3">
             <label for="description" class="form-label">รายละเอียด:</label>
             <textarea id="description" name="description" class="form-control" rows="5" required></textarea>
-        </div>        
+        </div>
 
         <div class="mb-3">
             <label for="stockQuantity" class="form-label">จำนวนสต็อก:</label>
@@ -22,10 +22,10 @@
         </div>
 
         <div class="mb-3">
-            <label for="formFile" class="form-label">รูปภาพ: </label>
-            <input class="form-control" type="file" id="formFile" name="image" required>
-        </div>
-
+            <label for="images" class="form-label">เลือกรูปภาพ:</label>
+            <input type="file" id="images" name="images" class="form-control" multiple required>
+        </div>        
+        
         <div class="mb-3">
             <label for="status" class="form-label">สถานะ:</label>
             <select id="status" name="status" class="form-select">
@@ -39,7 +39,7 @@
             <label for="sizes" class="form-label">ไซส์/ขนาด:</label>
             <input type="text" id="sizes" name="sizes" class="form-control" required>
         </div>
-        
+
         <div class="mb-3">
             <label for="categorySelect" class="form-label">เลือกหมวดหมู่:</label>
             <select id="categorySelect" name="category" class="form-select" required>
@@ -49,7 +49,6 @@
                 <% }); %>
             </select>
         </div>
-        
 
         <button type="submit" class="btn btn-dark">เพิ่มสินค้า</button>
     </form>

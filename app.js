@@ -15,11 +15,11 @@ const MongoStore = require('connect-mongo');
 // Model
 const Product = require('./models/Product');
 const User = require('./models/User');
-const Category = require('./models/Category');
 
 //Routes 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/Admin');
+const productRoutes = require('./routes/Product');
 
 
 
@@ -111,7 +111,7 @@ app.set('layout', 'layout/layout');
 
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-
+app.use('/product', productRoutes);
 
 app.get('/', async(req, res) => {
     try {

@@ -18,9 +18,9 @@ const productSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        image: {
+        images: [{ 
             type: String,
-        },
+        }],
         status: {
             type: String,
             enum: ["พร้อมขาย", "ไม่พร้อมขาย", "เลิกขาย"],

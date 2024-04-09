@@ -6,29 +6,21 @@ const { isLogin, isAdmin } = require("./setting");
 // firebase Storage
 const { Storage } = require('@google-cloud/storage');
 const path = require('path');
-const Multer = require('multer');
+const multer = require('multer');
 
 const storage = new Storage({
     projectId: process.env.project_ID,
-    keyFilename: '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-4ae9158a1f.json', // ใช้ path ของ service account key ของคุณ
+    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-4ae9158a1f.json'),
 });
 
 const bucket = storage.bucket(process.env.storage_BUCKET);
-const multer = Multer({
-    storage: Multer.memoryStorage(),
-    limits: {
-      fileSize: 5 * 1024 * 1024, // ขนาดไฟล์ไม่เกิน 5MB
-    },
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --------------------------------------- Product MANAGE Page ----------------------------------------------
 router.get('/productmanagement', isLogin, isAdmin, async (req,res)=>{
         const products = await Product.find().populate('category');
     res.render('admin/productManagement', {req:req, products: products});
 });
-
-
-
 
 // --------------------------------------- ADD product page ----------------------------------------------
 router.get('/add-product', isLogin, isAdmin, async (req, res) => {
@@ -37,25 +29,38 @@ router.get('/add-product', isLogin, isAdmin, async (req, res) => {
     res.render('admin/productAdd', {req:req, products: products, categories: categories});
 });
 
-router.post('/add-product', multer.single('image'), async (req, res) => {
+router.post('/add-product', upload.array("images"), async (req, res) => {
     try {
         const { productName, price, description, stockQuantity, status, sizes, category } = req.body;
-        const imageUrl = req.file ? await uploadImageToStorage(req.file) : null;
 
-        // สร้างสินค้าใหม่
+        // สร้างอาร์เรย์เพื่อเก็บ URL หรือที่อยู่ของรูปภาพทั้งหมด
+        const imageUrls = [];
+        
+        // วนลูปผ่านทุกไฟล์ที่อัปโหลด
+        for (const file of req.files) {
+            const imageUrl = await uploadImageToStorage(file);
+            imageUrls.push(imageUrl);
+        }
+
+        // สร้างสินค้าใหม่โดยใช้ URL ของรูปภาพที่ได้รับ
         const newProduct = new Product({
             productName,
             price,
             description,
             stockQuantity,
-            image: imageUrl, // ใช้ URL ของรูปภาพที่อัปโหลด
+            images: imageUrls, // ใช้ properties ชื่อ images เพื่อเก็บ URL ของรูปภาพ
             status,
             sizes: sizes.split(',').map(size => size.trim()),
             category,
         });
 
-        // บันทึกสินค้าลงใน MongoDB
         await newProduct.save();
+
+        await Categories.updateOne(
+            { _id: category },
+            { $push: { products: newProduct } }
+        );
+
         req.flash('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
         res.redirect('/');
     } catch (error) {
@@ -63,6 +68,7 @@ router.post('/add-product', multer.single('image'), async (req, res) => {
         res.status(500).send('Error adding product');
     }
 });
+
 
 async function uploadImageToStorage(file) {
     return new Promise((resolve, reject) => {
@@ -94,7 +100,7 @@ async function uploadImageToStorage(file) {
 }
 
 
-
+    
 
 // --------------------------------------- UPDATE product page ----------------------------------------------
 router.get('/edit-product/:productId', isLogin, isAdmin, async(req,res) => {
@@ -107,6 +113,36 @@ router.get('/edit-product/:productId', isLogin, isAdmin, async(req,res) => {
     };
     res.render('admin/productEdit', { req: req, product: product });
 });
+
+router.post('/edit-product/:productId', isLogin, isAdmin, async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const { productName, price, description, stockQuantity, status, sizes, category } = req.body;
+        
+        const product = await Product.findById(productId);
+        if (!product) {
+            req.flash('error', 'ไม่พบสินค้าที่ต้องการแก้ไข');
+            return res.redirect('/admin/productManagement');
+        }
+
+        product.productName = productName;
+        product.price = price;
+        product.description = description;
+        product.stockQuantity = stockQuantity;
+        product.status = status;
+        product.sizes = sizes.split(',').map(size => size.trim());
+        product.category = category;
+
+        await product.save();
+
+        req.flash('success', 'อัพเดตสินค้าเรียบร้อยแล้ว');
+        res.redirect('/admin/productManagement');
+    } catch (error) {
+        req.flash('error', 'มีปัญหาการอัพเดทสินค้า');
+        res.redirect('/admin/productManagement');
+    }
+});
+
 
 
 
@@ -190,5 +226,8 @@ router.post('/delete-category/:id', isLogin, isAdmin, async (req, res) => {
         res.redirect('/admin/categories');
     }
 });
+
+
+
 
 module.exports = router;
