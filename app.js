@@ -34,12 +34,10 @@ mongoose.connect(mongoDB)
         console.error('Connection to MongoDB failed:', err);
     });
 
-app.use(expressLayout);
-
-app.use(express.static(__dirname + '/public'));
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(expressLayout);
 app.use(flash());
 
 const mongoStore = MongoStore.create({
@@ -103,6 +101,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.set('app', path.join(__dirname, 'app'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout extractScripts', true);
@@ -124,6 +123,9 @@ app.get('/', async(req, res) => {
     }
 });
 
+app.get('/test', (req,res) => {
+  res.render('test', { req:req});
+})
 
 
 app.listen(process.env.PORT, () => {
