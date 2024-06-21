@@ -1,9 +1,18 @@
+const { Timestamp } = require("firebase/firestore");
 const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true,
+    },
+    firstname: {
+        type: String,
+        required: true,
+    },
+    lastname: {
+        type: String,
         required: true,
     },
     address: {
@@ -18,16 +27,13 @@ const addressSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    country: {
+    phone: {
         type: String,
         required: true,
     },
-    isPrimary: {
-        type: Boolean,
-        default: true,
-    },
-    addressIndex: {
-        type: String,
+    createdAt: {
+        type: Date,
+        default: Date.now
     },
 });
 

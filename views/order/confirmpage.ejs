@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <!-- Include Bootstrap CSS, Font Awesome, and any other relevant stylesheets -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<%- include('../partials/navbar') %>
+<form action="/order/place-order" method="POST">
+<section class="h-100 h-custom" style="background-color: #eee;">
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col">
+          <div class="card">
+            <div class="card-body p-4">
+  
+              <div class="row">
+  
+                <div class="col-lg-7">
+                  <h5 class="mb-3"><a href="#!" class="text-body"><i
+                        class="fas fa-long-arrow-alt-left me-2"></i>Continue shopping</a></h5>
+                  <hr>
+  
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <p class="mb-1">ตะกร้า</p>
+                      <p class="mb-0">สินค้าทั้งหมด <%= cartItems.length %> ชิ้นในตะกร้า</p>
+                    </div>
+                  </div>
+  
+                  <% cartItems.forEach(item => { %>
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <div class="d-flex flex-row align-items-center">
+                          <div>
+                            <img src="<%= item.product.images[0] %>" class="img-fluid rounded-3" alt="Shopping item" style="width: 65px;">
+                          </div>
+                          <div class="ms-3">
+                            <h5><%= item.product.productName %></h5>
+                            <p class="small mb-0"><%= item.product.category.categoryName %></p>
+                            <p class="small mb-0">ขนาด: <%= item.size %></p> <!-- แสดงขนาดที่เลือก -->
+                          </div>
+                        </div>
+                        <div class="d-flex flex-row align-items-center">
+                          <div style="width: 50px;">
+                            <h5 class="fw-normal mb-0"><%= item.quantity %> ชิ้น</h5>
+                          </div>
+                          <div style="width: 80px;">
+                            <h5 class="mb-0">฿ <%= (item.price * item.quantity).toLocaleString() %></h5> <!-- ใช้ราคาในตะกร้า -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <% }); %>
+  
+                </div>
+                <div class="col-lg-5">
+  
+                  <div class="card bg-light text-dark rounded-3 mb-3">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">สินค้าทั้งหมด</h5>
+                      </div>
+  
+                      <div class="d-flex justify-content-between">
+                        <p class="mb-2">ราคาสินค้า</p>
+                        <p class="mb-2">฿ <%= (totalCost - shippingCost).toLocaleString() %></p>                        
+                      </div>
+  
+                      <div class="d-flex justify-content-between">
+                        <p class="mb-2">ค่าจัดส่ง</p>
+                        <p class="mb-2">฿ <%= shippingCost.toLocaleString() %></p>
+                      </div>
+  
+                      <div class="d-flex justify-content-between mb-4">
+                        <p class="mb-2">จำนวนเงินรวมทั้งสิ้น</p>
+                        <p class="mb-2">฿ <%= totalCost.toLocaleString() %></p>
+                      </div>
+  
+                    </div>
+                  </div>
+  
+                  <div class="card bg-dark text-white rounded-3">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">ที่อยู่จัดส่ง</h5>
+                      </div>
+  
+                      <% if (address) { %>
+                        <p>ชื่อ: <%= address.firstname %> <%= address.lastname %></p>
+                        <p><%= address.address %>, <%= address.city %>, โทรศัพท์: <%= address.phone %></p>
+
+                        <button type="submit" class="btn btn-light ">ยืนยันการสั่งซื้อ</button>
+                       </form>
+
+                        <hr class="my-4">
+                    <% } else { %>
+                        <p>ยังไม่ได้เพิ่มที่อยู่จัดส่ง</p>
+                        <a href="/user/profile-edit/<%= req.user._id %>" class="btn btn-light btn-block btn-lg">เพิ่มที่อยู่จัดส่ง</a>
+                    <% } %>
+  
+                    </div>
+                  </div>
+  
+                </div>
+  
+              </div>
+  
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+<%- include('../partials/footer') %>
+</body>
+</html>

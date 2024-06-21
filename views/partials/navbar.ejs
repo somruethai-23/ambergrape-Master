@@ -14,7 +14,7 @@
       </div>
       <% if (req.isAuthenticated()) { %>
         <!-- Cart -->
-        <a type="button" class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center">
+        <a href="/cart" type="button" class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center">
             <i class="fa-solid fa-cart-shopping" style="color: #000000;"></i>
         </a>
         <!-- USER -->
@@ -23,8 +23,8 @@
                 <i class="fa-solid fa-user" style="color: #000000;"></i>
             </a>
             <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="#">โปรไฟล์</a></li>
-                <li><a class="dropdown-item" href="/auth/logout">ออกจากระบบ</a></li>
+              <li><a class="dropdown-item" href="/user/profile/<%= user._id %>">โปรไฟล์</a></li>
+              <li><a class="dropdown-item" href="/auth/logout">ออกจากระบบ</a></li>
             </ul>
         </div>
     <% } else { %>

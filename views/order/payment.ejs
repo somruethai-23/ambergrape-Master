@@ -1,0 +1,25 @@
+<div class="container">
+    <h1 class="mt-5">Order Summary</h1>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Order ID: <%= order._id %></h5>
+            <p class="card-text">User: <%= order.user %></p>
+            <p class="card-text">Order Date: <%= order.orderDate.toDateString() %></p>
+            <p class="card-text">Order Status: <%= order.orderStatus %></p>
+            <h5 class="mt-4">Items:</h5>
+            <ul class="list-group">
+                <% order.items.forEach(item => { %>
+                    <li class="list-group-item">
+                        <p>Product: <%= item.product %></p>
+                        <p>Quantity: <%= item.quantity %></p>
+                    </li>
+                <% }) %>
+            </ul>
+            <h5 class="mt-4">SubTotal: ฿<%= order.subTotal.toLocaleString() %></h5>
+            <h5 class="mt-4">Total Amount: ฿<%= order.totalAmount.toLocaleString() %></h5>
+            <h5 class="mt-4">Shipping Fee: ฿<%= order.ShippingFee.toLocaleString() %></h5>
+            <h5 class="mt-4">Payment QR Code:</h5>
+            <img src="<%= order.paymentQRCode %>" alt="QR Code for Payment" />
+        </div>
+    </div>
+</div>

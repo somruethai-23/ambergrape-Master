@@ -1,0 +1,69 @@
+<% if (error && error.length) { %>
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+        <%= error[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+<% if (success && success.length) { %>
+    <div class="alert alert-success d-flex justify-content-between align-items-center">
+        <%= success[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<div class="container-xl px-4 mt-4">
+    <hr class="mt-0 mb-4">
+    <div class="row">
+        <div class="col-xl-4">
+            <div class="card mb-4 mb-xl-0">
+                <div class="card-header">รายละเอียดโปรไฟล์</div>
+                <div class="card-body text-center">
+                    <i class="fa-solid fa-circle-user" style="color: #000000; font-size: 6em;"></i>
+                    <p>ยินดีต้อนรับ, คุณ<%= user.username %></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header">รายละเอียดส่วนตัว</div>
+                <div class="card-body">
+                    <h5>กรอกที่อยู่รับของ</h3>
+                    <form action="/user/profile-edit/<%= user._id %>" method="POST">
+                        <div class="row gx-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputFirstName">ชื่อจริง</label>
+                                <input class="form-control" id="inputFirstName" name="firstname" type="text" placeholder="ใส่ชื่อจริง...." value="<%= user.firstname %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputLastName">นามสกุล</label>
+                                <input class="form-control" id="inputLastName" name="lastname" type="text" placeholder="ใส่นามสกุล...." value="<%= user.lastname %>">
+                            </div>
+                        </div>
+                        <div class="row gx-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputAddress">ที่อยู่(เลขที่บ้าน/อาคาร หมู่/ซอย ตำบล ถนน อำเภอ)</label>
+                                <textarea class="form-control" id="inputAddress" name="address" type="text" placeholder="123/45 หมู่6 ถนนสมมุติ ตำบลสมมุติ" value="<%= user.address %>"></textarea>
+                            </div>
+                        </div>
+                        <div class="row gx-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputCity">จังหวัด</label>
+                                <input class="form-control" id="inputCity" name="city" type="text" placeholder="ใส่อำเภอ...." value="<%= user.city %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputPostalCode">รหัสไปรษณีย์</label>
+                                <input class="form-control" id="inputPostalCode" name="postalCode" type="text" placeholder="ใส่รหัสไปรษณีย์...." value="<%= user.postalCode %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputPhone">เบอร์โทรศัพท์</label>
+                                <input class="form-control" id="inputPhone" name="phone" type="tel" placeholder="000-0000000" value="<%= user.phone %>">
+                            </div>
+                        </div>
+                        <!-- Save changes button-->
+                        <button class="btn btn-primary" type="submit">บันทึก</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Product = require("../models/Product");
-const Categories = require("../models/Category");
+const Category = require("../models/Category");
 const { isLogin, isAdmin } = require("./setting");
 
 // firebase Storage
@@ -25,13 +25,19 @@ router.get('/productmanagement', isLogin, isAdmin, async (req,res)=>{
 // --------------------------------------- ADD product page ----------------------------------------------
 router.get('/add-product', isLogin, isAdmin, async (req, res) => {
     const products = await Product.find();
-    const categories = await Categories.find();
-    res.render('admin/productAdd', {req:req, products: products, categories: categories});
+    const categories = await Category.find();
+    res.render('admin/productAdd', {req:req, products: products, categories: categories, layout: false});
 });
 
 router.post('/add-product', upload.array("images"), async (req, res) => {
+
     try {
-        const { productName, price, description, stockQuantity, status, sizes, category } = req.body;
+        const { productName, price, stockQuantity, status, sizes, category, description} = req.body;
+
+        const parsedSizes = sizes.map(sizeObj => ({
+            size: sizeObj.size.trim(),
+            price: parseFloat(sizeObj.price)
+        }));
 
         // สร้างอาร์เรย์เพื่อเก็บ URL หรือที่อยู่ของรูปภาพทั้งหมด
         const imageUrls = [];
@@ -50,13 +56,13 @@ router.post('/add-product', upload.array("images"), async (req, res) => {
             stockQuantity,
             images: imageUrls, // ใช้ properties ชื่อ images เพื่อเก็บ URL ของรูปภาพ
             status,
-            sizes: sizes.split(',').map(size => size.trim()),
+            sizes: parsedSizes,
             category,
         });
 
         await newProduct.save();
 
-        await Categories.updateOne(
+        await Category.updateOne(
             { _id: category },
             { $push: { products: newProduct } }
         );

@@ -1,0 +1,73 @@
+<% if (error && error.length) { %>
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+        <%= error[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+<% if (success && success.length) { %>
+    <div class="alert alert-success d-flex justify-content-between align-items-center">
+        <%= success[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<div class="container-xl px-4 mt-4">
+    <hr class="mt-0 mb-4">
+    <div class="row">
+        <div class="col-xl-4">
+            <div class="card mb-4 mb-xl-0">
+                <div class="card-header bg-primary text-white">รายละเอียดโปรไฟล์</div>
+                <div class="card-body text-center">
+                    <i class="fa-solid fa-circle-user" style="color: #000000; font-size: 6em;"></i>
+                    <p class="mt-3">ยินดีต้อนรับ, คุณ<%= user.username %></p>
+                    <a href="/order/history" class="btn btn-primary mt-3">ดูประวัติการสั่งซื้อ</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">ประวัติการสั่งซื้อ</div>
+                <div class="card-body">
+                    <% if (orders.length === 0) { %>
+                        <p>ยังไม่มีการสั่งซื้อ</p>
+                    <% } else { %>
+                        <div class="accordion" id="orderAccordion">
+                            <% orders.forEach((order, index) => { %>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading<%= index %>">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= index %>" aria-expanded="false" aria-controls="collapse<%= index %>">
+                                            คำสั่งซื้อที่: <%= order._id %> - วันที่: <%= order.orderDate.toDateString() %>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading<%= index %>" data-bs-parent="#orderAccordion">
+                                        <div class="accordion-body">
+                                            <p><strong>สถานะคำสั่งซื้อ:</strong> <%= order.orderStatus %></p>
+                                            <h5 class="mt-3"><strong>รายการสินค้า:</strong></h5>
+                                            <ul class="list-group mb-3">
+                                                <% order.items.forEach(item => { %>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p class="mb-0"><strong>สินค้า:</strong> <%= item.product.productName %></p>
+                                                            <p class="mb-0"><strong>จำนวน:</strong> <%= item.quantity %></p>
+                                                        </div>
+                                                        <span class="badge bg-primary rounded-pill">฿<%= item.product.price.toLocaleString() %></span>
+                                                    </li>
+                                                <% }) %>
+                                            </ul>
+                                            <div class="d-flex justify-content-between">
+                                                <h5><strong>ยอดรวม:</strong> ฿<%= order.subTotal.toLocaleString() %></h5>
+                                                <h5><strong>ค่าจัดส่ง:</strong> ฿<%= order.ShippingFee.toLocaleString() %></h5>
+                                                <h5><strong>รวมทั้งหมด:</strong> ฿<%= order.totalCost.toLocaleString() %></h5>
+                                            </div>
+                                            <a href="/order/<%= order._id %>" class="btn btn-primary mt-3">ดูรายละเอียดคำสั่งซื้อ</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

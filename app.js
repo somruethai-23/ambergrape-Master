@@ -15,11 +15,15 @@ const MongoStore = require('connect-mongo');
 // Model
 const Product = require('./models/Product');
 const User = require('./models/User');
+const Order = require('./models/Order');
 
 //Routes 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/Admin');
 const productRoutes = require('./routes/Product');
+const userRoutes = require('./routes/user');
+const cartRoutes = require('./routes/cart');
+const orderRoutes = require('./routes/order');
 
 
 
@@ -89,16 +93,19 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-// can access in any template
-app.use((req,res,next)=>{
-    res.locals.success = req.flash('success');
-    res.locals.error = req.flash('error');
-    next();
-})
-
 app.use((req, res, next) => {
-    res.locals.layout = false;
-    next();
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  res.locals.req = req;
+  res.locals.layout = false;
+  
+  if (req.isAuthenticated()) {
+      res.locals.user = req.user;
+  } else {
+      res.locals.user = null;
+  }
+
+  next();
 });
 
 app.set('app', path.join(__dirname, 'app'));
@@ -111,21 +118,38 @@ app.set('layout', 'layout/layout');
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/product', productRoutes);
+app.use('/user', userRoutes);
+app.use('/cart', cartRoutes);
+app.use('/order', orderRoutes);
+
+function injectUser(req, res, next) {
+  if (req.isAuthenticated()) { // ตรวจสอบว่าผู้ใช้ล็อกอินอยู่หรือไม่
+      res.locals.user = req.user; // กำหนด user ให้กับ res.locals เพื่อให้สามารถเข้าถึงใน EJS ได้
+  } else {
+      res.locals.user = null;
+  }
+  next();
+}
+
+app.use(injectUser);
+
+
+
+
+
 
 app.get('/', async(req, res) => {
     try {
       const products = await Product.find().populate('category');
 
-        res.render('index', { products: products, req: req });
+        res.render('index', { products: products, req: req, laysout: false });
     } catch (error) {
         console.log('การดึงข้อมูลผิดพลาด', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-app.get('/test', (req,res) => {
-  res.render('test', { req:req});
-})
+
 
 
 app.listen(process.env.PORT, () => {

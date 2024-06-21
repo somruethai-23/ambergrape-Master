@@ -1,55 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amber Grape Farm</title>
+    
+    <!-- Bootstrap5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&family=Poppins&display=swap" rel="stylesheet">
+    <!-- Font Awesome (ICON) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <script src="https://cdn.tiny.cloud/1/4qwfmxuj1ox41qkvxl90lkc2dwjnuz13fwyht06pfrx0bx69/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+<%- include('../partials/navbar')%>
+
 <div class="container">
     <h1 class="text-center mt-5 mb-4">เพิ่มสินค้า</h1>
-    <form action="/admin/add-product" method="POST" class="mx-auto" style="max-width: 400px;" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="productName" class="form-label">ชื่อสินค้า:</label>
-            <input type="text" id="productName" name="productName" class="form-control" required>
-        </div>
+    <div class="row">
+        <form action="/admin/add-product" method="POST" enctype="multipart/form-data">
+            <!-- ข้อมูลที่ไม่เกี่ยวข้องกับ description -->
+            <div class="mb-3">
+                <label for="productName" class="form-label">ชื่อสินค้า:</label>
+                <input type="text" id="productName" name="productName" class="form-control" required>
+            </div>
 
-        <div class="mb-3">
-            <label for="price" class="form-label">ราคา:</label>
-            <input type="number" id="price" name="price" class="form-control" required>
-        </div>
+            <div class="mb-3">
+                <label for="stockQuantity" class="form-label">จำนวนสต็อก:</label>
+                <input type="number" id="stockQuantity" name="stockQuantity" class="form-control" required>
+            </div>
 
-        <div class="mb-3">
-            <label for="description" class="form-label">รายละเอียด:</label>
-            <textarea id="description" name="description" class="form-control" rows="5" required></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label for="stockQuantity" class="form-label">จำนวนสต็อก:</label>
-            <input type="number" id="stockQuantity" name="stockQuantity" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="images" class="form-label">เลือกรูปภาพ:</label>
-            <input type="file" id="images" name="images" class="form-control" multiple required>
-        </div>        
+            <div class="mb-3">
+                <label for="images" class="form-label">เลือกรูปภาพ:</label>
+                <input type="file" id="images" name="images" class="form-control" multiple required>
+            </div>        
         
-        <div class="mb-3">
-            <label for="status" class="form-label">สถานะ:</label>
-            <select id="status" name="status" class="form-select">
-                <option value="พร้อมขาย">พร้อมขาย</option>
-                <option value="ไม่พร้อมขาย">ไม่พร้อมขาย</option>
-                <option value="เลิกขาย">เลิกขาย</option>
-            </select>
-        </div>
+            <div class="mb-3">
+                <label for="status" class="form-label">สถานะ:</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="พร้อมขาย">พร้อมขาย</option>
+                    <option value="ไม่พร้อมขาย">ไม่พร้อมขาย</option>
+                    <option value="เลิกขาย">เลิกขาย</option>
+                </select>
+            </div>
 
-        <div class="mb-3">
-            <label for="sizes" class="form-label">ไซส์/ขนาด:</label>
-            <input type="text" id="sizes" name="sizes" class="form-control" required>
-        </div>
+            <div id="sizePriceContainer" class="mb-3">
+                <label for="sizes" class="form-label">ไซส์/ขนาดและราคา:</label>
+                <div class="input-group mb-2">
+                    <input type="text" name="sizes[0][size]" class="form-control" placeholder="ไซส์/ขนาด" required>
+                    <input type="number" name="sizes[0][price]" class="form-control" placeholder="ราคา" required>
+                    <button type="button" class="btn btn-outline-secondary" onclick="addSizePriceField()">+</button>
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label for="categorySelect" class="form-label">เลือกหมวดหมู่:</label>
-            <select id="categorySelect" name="category" class="form-select" required>
-                <option value="">-- เลือกหมวดหมู่ --</option>
-                <% categories.forEach(category => { %>
-                    <option value="<%= category._id %>"><%= category.categoryName %></option>
-                <% }); %>
-            </select>
-        </div>
+            <div class="mb-3">
+                <label for="categorySelect" class="form-label">เลือกหมวดหมู่:</label>
+                <select id="categorySelect" name="category" class="form-select" required>
+                    <option value="">-- เลือกหมวดหมู่ --</option>
+                    <% categories.forEach(category => { %>
+                        <option value="<%= category._id %>"><%= category.categoryName %></option>
+                    <% }); %>
+                </select>
+            </div>
 
+                        
+            <script>
+                let sizePriceIndex = 1;
+
+                function addSizePriceField() {
+                    const container = document.getElementById('sizePriceContainer');
+                    const div = document.createElement('div');
+                    div.className = 'input-group mb-2';
+                    div.innerHTML = `
+                        <input type="text" name="sizes[${sizePriceIndex}][size]" class="form-control" placeholder="ไซส์/ขนาด" required>
+                        <input type="number" name="sizes[${sizePriceIndex}][price]" class="form-control" placeholder="ราคา" required>
+                        <button type="button" class="btn btn-outline-secondary" onclick="removeSizePriceField(this)">-</button>
+                    `;
+                    container.appendChild(div);
+                    sizePriceIndex++;
+                }
+
+                function removeSizePriceField(button) {
+                    button.parentElement.remove();
+                }
+            </script>
+
+            <label for="categorySelect" class="form-label">รายละเอียดสินค้า: </label>
+            <div class="mb-3">
+              <textarea name="description" id="description"></textarea>
+            </div>
+        </div>
         <button type="submit" class="btn btn-dark">เพิ่มสินค้า</button>
     </form>
 </div>
+
+</body>
+</html>

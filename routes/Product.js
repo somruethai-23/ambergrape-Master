@@ -4,7 +4,7 @@ const Category = require("../models/Category");
 
 router.get('/:productId', async (req, res) => {
     try {
-        const product = await Product.findById(req.params.productId);
+        const product = await Product.findById(req.params.productId).populate('category');
         if (!product) {
             return res.status(404).send("Product not found");
         }
@@ -18,5 +18,6 @@ router.get('/:productId', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 module.exports = router;

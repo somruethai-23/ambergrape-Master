@@ -6,36 +6,20 @@ const orderSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
-    products: [{
-        product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true,
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 1,
-        },
+    items: [{
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        quantity: { type: Number, required: true }
     }],
-    subTotal: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
-    totalAmount: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
+    subTotal: { type: Number, required: true },
+    totalCost: { type: Number, required: true },  // เปลี่ยน totalCost เป็น totalAmount
     orderDate: {
         type: Date,
         default: Date.now,
     },
     orderStatus: {
         type: String,
-        enum: ['กำลังดำเนินการ', 'อยู่ในช่วงขนส่ง', 'รับสินค้าแล้ว', 'ยกเลิกสำเร็จ'],
-        default: 'กำลังดำเนินการ',
+        enum: ['ยังไม่ได้ชำระ', 'รอตรวจสอบการชำระ', 'กำลังดำเนินการ', 'อยู่ในช่วงขนส่ง', 'รับสินค้าแล้ว', 'ยกเลิกสำเร็จ'],
+        default: 'ยังไม่ได้ชำระ',
     },
     paymentMethod: {
         type: String,
@@ -53,9 +37,6 @@ const orderSchema = new mongoose.Schema({
     shippingAddress: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Address',
-    },
-    ShippingMethod: {
-        type: String,
     },
     ShippingFee: {
         type: Number,
