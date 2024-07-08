@@ -1,48 +1,52 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const orderSchema = new mongoose.Schema({
+const orderSchema = new Schema({
     user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        required: true
     },
     items: [{
-        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-        quantity: { type: Number, required: true }
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        size: {
+            type: String,
+            required: true
+        },
+        price: {
+            type: Number,
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true
+        }
     }],
-    subTotal: { type: Number, required: true },
-    totalCost: { type: Number, required: true },  // เปลี่ยน totalCost เป็น totalAmount
-    orderDate: {
-        type: Date,
-        default: Date.now,
+    totalCost: {
+        type: Number,
+        required: true
+    },
+    shippingAddress: {
+        type: String,
+        required: true
+    },
+    shippingCost: {
+        type: Number,
+        required: true
     },
     orderStatus: {
         type: String,
-        enum: ['ยังไม่ได้ชำระ', 'รอตรวจสอบการชำระ', 'กำลังดำเนินการ', 'อยู่ในช่วงขนส่ง', 'รับสินค้าแล้ว', 'ยกเลิกสำเร็จ'],
-        default: 'ยังไม่ได้ชำระ',
+        enum: ['ยังไม่ได้ชำระ', 'ชำระแล้ว', 'กำลังดำเนินการ', 'จัดส่งแล้ว', 'สำเร็จ', 'ยกเลิก'],
+        default: 'ยังไม่ได้ชำระ'
     },
-    paymentMethod: {
-        type: String,
-    },
-    paymentStatus: {
-        type: String,
-        enum: ['ยังไม่ได้จ่าย', 'กำลังตรวจสอบ', 'จ่ายสำเร็จ'],
-    },
-    trackingNumber: {
-        type: String,
-    },
-    notes: {
-        type: String,
-    },
-    shippingAddress: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Address',
-    },
-    ShippingFee: {
-        type: Number,
-    },
+    orderDate: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const Order = mongoose.model("Order", orderSchema);
-
-module.exports = Order;
+module.exports = mongoose.model('Order', orderSchema);

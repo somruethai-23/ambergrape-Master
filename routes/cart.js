@@ -3,32 +3,12 @@ const router = express.Router();
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Address = require('../models/Address');
 const { isLogin } = require('../routes/setting');
 const { registerVersion } = require('firebase/app');
 
-router.get('/', isLogin, async (req, res) => {
-    let user;
-    if (req.user) {
-        user = await User.findById(req.user._id);
-    }
-
-    if (!req.session.cart) {
-        req.session.cart = { items: [] }; // Ensure cart is initialized
-    }
-
-    const cart = req.session.cart;
-
-    // Populate products for each item in the cart
-    for (const item of cart.items) {
-        const product = await Product.findById(item.productId).populate('category');
-        item.product = product;
-    }
-
-    res.render('cart/cart', { cart: cart, user: user, req: req, layout: false });
-});
-
-
-router.post("/add-to-cart/:id", isLogin, async (req, res) => {
+// เพิ่มสินค้าเข้าตะกร้า
+router.post('/add-to-cart/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const { quantity, size } = req.body;
     const product = await Product.findById(productId);
@@ -42,78 +22,207 @@ router.post("/add-to-cart/:id", isLogin, async (req, res) => {
     }
 
     try {
-        if (!req.session.cart) {
-            req.session.cart = {
+        let cart = await Cart.findOne({ user: req.user._id });
+
+        if (!cart) {
+            cart = new Cart({
+                user: req.user._id,
                 items: [],
                 totalPrice: 0,
                 totalQuantity: 0
-            };
+            });
         }
-    
-        const cart = req.session.cart;
+
         const existingItemIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
-    
-        // หลังจากที่เช็คว่าสินค้ามีอยู่ในระบบและมีสต็อกเพียงพอ
+
         if (existingItemIndex >= 0) {
             cart.items[existingItemIndex].quantity += parseInt(quantity);
         } else {
-            // เพิ่มสินค้าเข้าตะกร้า
             const selectedSize = product.sizes.find(s => s.size === size);
             if (selectedSize) {
-                cart.items.push({ 
-                    productId: product._id, 
-                    quantity: parseInt(quantity), 
+                cart.items.push({
+                    productId: product._id,
+                    quantity: parseInt(quantity),
                     size: size,
-                    price: selectedSize.price // ราคาของไซส์ที่เลือก
+                    price: selectedSize.price
                 });
-    
-                // บันทึกราคาและไซส์ลงใน session
-                cart.totalPrice += selectedSize.price * parseInt(quantity); // เพิ่มราคารวม
-                cart.totalQuantity += parseInt(quantity); // เพิ่มจำนวนสินค้าทั้งหมด
-    
             } else {
                 return res.json({ success: false, message: 'ขนาดสินค้าที่เลือกไม่ถูกต้อง' });
             }
         }
-    
-        req.session.cart = cart;
-    
-        res.redirect('/');
+
+        cart.totalPrice = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        cart.totalQuantity = cart.items.reduce((acc, item) => acc + item.quantity, 0);
+
+        await cart.save();
+
+        res.redirect('/cart');
     } catch (err) {
         console.log(err);
         res.redirect('/');
     }
 });
 
-router.post('/update-cart', async (req, res) => {
-    const { productId, size, quantity } = req.body;
-    if (!req.session.cart) {
-        return res.status(400).send({ error: 'Cart not found' });
+// หน้าสินค้าในตะกร้าก่อน checkout 
+router.get('/', isLogin, async (req, res) => {
+    try {
+        const cart = await Cart.findOne({ user: req.user._id })
+        .populate({
+            path: 'items.productId',
+            populate: {
+                path: 'category',
+                model: 'Category'
+            }
+        });
+        const address = await Address.findOne({ user: req.user._id });
+
+        if (!cart) {
+            return res.render('cart/cart', { cart: null, req: req });
+        }
+
+        let shippingCost = 0;
+
+        const categoryCounts = {};
+
+        cart.items.forEach(item => {
+            const categoryName = item.productId.category ? item.productId.category.categoryName : 'undefined';
+
+            if (!categoryCounts[categoryName]) {
+                categoryCounts[categoryName] = 0;
+            }
+            categoryCounts[categoryName] += item.quantity;
+        });
+
+        for (const categoryName in categoryCounts) {
+            const numItems = categoryCounts[categoryName];
+            console.log(`Calculating shipping for ${categoryName}: ${numItems} items`);
+
+            if (categoryName === "ต้นองุ่น") {
+                const boxes = Math.ceil(numItems / 3);
+                shippingCost += boxes * 150;
+            } else if (categoryName === "ปุ๋ยน้ำหมัก") {
+                shippingCost += numItems * 70;
+            } else {
+                shippingCost += numItems * 50;
+            }
+        }
+
+        res.render('cart/cart', { cart, address, shippingCost, req: req });
+    } catch (err) {
+        console.log(err);
+        res.redirect('/');
     }
+});
 
-    const cart = req.session.cart;
 
-    if (!Array.isArray(cart.items)) {
-        cart.items = []; // Ensure items is an array
+
+// เพิ่มจำนวนสินค้า
+router.post('/plus/:id', isLogin, async (req, res) => {
+    const productId = req.params.id;
+    const size = req.query.size;
+
+    try {
+        let cart = await Cart.findOne({ user: req.user._id });
+
+        if (!cart) {
+            return res.status(404).json({ success: false, message: 'ไม่พบตะกร้าสินค้า' });
+        }
+
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
+
+        if (itemIndex >= 0) {
+            cart.items[itemIndex].quantity += 1;
+
+            cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+            await cart.save();
+
+            res.redirect('/cart'); // Redirect to the cart page
+        } else {
+            req.flash('error', 'เกิดข้อผิดพลาดในการเพิ่มจำนวนสินค้า');
+            res.redirect('/cart');
+        }
+    } catch (err) {
+        console.log(err);
+        res.redirect('/cart');
     }
+});
 
-    const item = cart.items.find(item => item.productId === productId && item.size === size);
-    if (!item) {
-        return res.status(400).send({ error: 'Item not found in cart' });
+// ลดจำนวนสินค้า
+router.post('/minus/:id', isLogin, async (req, res) => {
+    const productId = req.params.id;
+    const size = req.query.size;
+
+    try {
+        let cart = await Cart.findOne({ user: req.user._id });
+
+        if (!cart) {
+            return res.redirect('/');
+        }
+
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
+
+        if (itemIndex >= 0) {
+            if (cart.items[itemIndex].quantity > 1) {
+                cart.items[itemIndex].quantity -= 1;
+
+                cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+                await cart.save();
+
+                res.redirect('/cart'); // Redirect to the cart page
+            } else {
+                res.redirect('/cart');
+            }
+        } else {
+            res.redirect('/cart');
+        }
+    } catch (err) {
+        console.log(err);
+        res.redirect('/cart');
     }
+});
 
-    // Update the quantity
-    item.quantity = quantity;
+// POST route to remove item from cart
+router.post('/remove-from-cart/:id', isLogin, async (req, res) => {
+    const productId = req.params.id;
+    const size = req.query.size; // รับค่า size จาก query string
 
-    // Update the session
-    req.session.cart = cart;
+    try {
+        // Retrieve the cart from the database
+        let cart = await Cart.findOne({ user: req.user._id });
 
-    // Calculate new totals
-    const product = await Product.findById(productId);
-    const subTotal = item.price * item.quantity;
-    const total = cart.items.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
+        if (!cart) {
+            req.flash('error', 'ไม่พบตะกร้าสินค้า');
+            return res.redirect('/cart');
+        }
 
-    res.send({ subTotal, total });
+        // Find the item in the cart
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
+
+        if (itemIndex >= 0) {
+            // Get the item
+            const item = cart.items[itemIndex];
+
+            // Update the total price and quantity
+            cart.totalPrice -= item.price * item.quantity;
+            cart.totalQuantity -= item.quantity;
+
+            // Remove the item from the cart
+            cart.items.splice(itemIndex, 1);
+
+            // Save the updated cart to the database
+            await cart.save();
+
+            req.flash('success', 'ลบสินค้าออกจากตะกร้าสำเร็จ');
+            res.redirect('/cart');
+        } else {
+            req.flash('error', 'ไม่พบสินค้านี้ในตะกร้า');
+            res.redirect('/cart');
+        }
+    } catch (err) {
+        console.log(err);
+        req.flash('error', 'เกิดข้อผิดพลาดในการลบสินค้าออกจากตะกร้า');
+        res.redirect('/cart');
+    }
 });
 
 

@@ -4,85 +4,69 @@ const router = express.Router();
 const Product = require('../models/Product');
 const Address = require('../models/Address');
 const Order = require('../models/Order');
+const Cart = require('../models/Cart');
 
-const getOrderData = async (req, res, next) => {
-    try {
-        if (req.session.cart && req.session.cart.items.length > 0) {
-            const cartItems = req.session.cart.items;
-            const orderItems = await Promise.all(cartItems.map(async item => {
-                const product = await Product.findById(item.productId).populate('category');
-                const selectedSize = product.sizes.find(size => size.size === item.size);
-                return { product, quantity: item.quantity, price: selectedSize.price, size: item.size };
-            }));
+// ยืนยันการสั่งซื้อ
+router.post('/place-order', isLogin, async (req, res) => {
+    const user = req.user._id;
+    const shippingAddress = await Address.findOne({ user });
+    const cart = await Cart.findOne({ user }).populate({
+        path: 'items.productId',
+        populate: { path: 'category' }
+    });
 
-            let shippingCost = 0;
-            orderItems.forEach(item => {
-                if (item.product.category.categoryName === 'ต้นองุ่น') {
-                    shippingCost += Math.ceil(item.quantity / 3) * 150;
-                } else {
-                    shippingCost += item.quantity * 70;
-                }
-            });
-
-            const subTotal = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
-            const totalCost = subTotal + shippingCost;
-
-            const address = await Address.findOne({ user: req.user._id });
-
-            res.locals.orderItems = orderItems;
-            res.locals.shippingCost = shippingCost;
-            res.locals.subTotal = subTotal;
-            res.locals.totalCost = totalCost;
-            res.locals.cartItems = cartItems;
-            res.locals.address = address;
-        }
-        next();
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+    if (!cart || cart.items.length === 0) {
+        return res.status(400).json({ message: 'Your cart is empty.' });
     }
-};
+    const { totalCost, shippingCost } = req.body;
 
-router.post('/', getOrderData, async (req, res) => {
-    const { cartItems } = req.body;
-    req.session.cart = { items: cartItems };
-    await req.session.save();
-    res.redirect('/order');
-});
-
-router.get('/', getOrderData, isLogin, (req, res) => {
-    if (!res.locals.cartItems || res.locals.cartItems.length === 0) {
-        return res.redirect('/cart');
-    }
-    res.render('order/confirmpage', { req: req });
-});
-
-
-// Place Order
-router.post('/place-order', getOrderData, isLogin, async (req, res) => {
-    if (!res.locals.orderItems || !res.locals.orderItems.length) {
-        console.log('orderItems is undefined or empty');
-        req.flash('error', 'ไม่มีสินค้าในคำสั่งซื้อ');
-        return res.redirect('/order');
-    }
-
-    // Save order to database
     const order = new Order({
-        user: req.user._id, // Assuming user is authenticated
-        items: res.locals.orderItems.map(item => ({ product: item.product._id, quantity: item.quantity, size: item.size })),
-        subTotal: res.locals.subTotal,
-        totalCost: res.locals.totalCost,
-        shippingAddress: res.locals.address,
-        ShippingFee: res.locals.shippingCost
+        user: user,
+        items: cart.items.map(item => {
+            const productSize = item.size;
+            const productPrice = item.price; 
+            return {
+                product: item.productId._id,
+                size: productSize,
+                price: productPrice,
+                quantity: item.quantity
+            };
+        }),
+        totalCost: totalCost,
+        shippingAddress: shippingAddress ,
+        shippingCost: shippingCost,
     });
     await order.save();
 
-    // Clear cart from session or database
-    req.session.cart = { items: [] };
-    
+    console.log(totalCost, shippingAddress, shippingCost);
+
+    cart.items = [];
+    cart.totalPrice = 0;
+    await cart.save();
+
     req.flash('success', 'สั่งซื้อเรียบร้อย สามารถเข้าไปดูประวัติการสั่งซื้อได้ที่โปรไฟล์');
-    res.redirect(`/${order._id}`);
+    res.redirect(`/order/pay/${order._id}`);
 });
+
+
+router.get('/pay/:orderId', isLogin, async (req, res) => {
+    try {
+        const orderId = req.params.orderId; 
+        const order = await Order.findById(orderId).populate('items.product');
+        const address = await Address.findOne({ user: req.user._id });
+
+        if (!order) {
+            req.flash('error', 'Order not found');
+            return res.redirect('/');
+        }
+
+        res.render('order/paypage', { req: req, order: order, address: address });
+    } catch (err) {
+        console.log('เกิดปัญหาขึ้นที่หน้าจ่ายเงิน ', err);
+        res.redirect('/');
+    }
+});
+
 
 router.get('/history', isLogin, async (req, res) => {
     try {
