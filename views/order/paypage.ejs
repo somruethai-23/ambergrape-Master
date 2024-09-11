@@ -9,41 +9,38 @@
                             <div class="d-flex flex-row align-items-center">
                                 <h4 class="text-uppercase mt-1">การชำระเงิน</h4>
                             </div>
-                            <a href="#!">ยกเลิกคำสั่งซื้อ</a>
+                            <form action="/order/cancel-order/<%= order._id %>" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('คุณแน่ใจว่าต้องการยกเลิกคำสั่งซื้อ?')">ยกเลิกคำสั่งซื้อ</button>
+                            </form>
                         </div>
 
                         <div class="row">
                             <div class="col-md-7 col-lg-7 col-xl-6 mb-4 mb-md-0">
                                 <h6>ทางเลือกที่1: QRCode สแกนจ่าย</h6>
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg">
-                                <div>
-                                    <hr />
-
-                                    <div class="card mt-4">
-                                        <div class="card-body">
-                                            <h5 class="card-title">โอนจ่ายบัญชี</h5>
-                                            <p>
-                                                <b>ธนาคาร:</b> กสิกร / kasikorn <br>
-                                                <b>ชื่อ:</b> อิอิ วุ้ววุ้ว <br>
-                                                <b>เลขยัญชี:</b> 1 877 3488999 0039 <br>
-                                            </p>
-        
-                                        </div>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" class="img-fluid rounded mb-4">
+                                
+                                <h6>ทางเลือกที่2: โอนจ่ายบัญชี</h6>
+                                <div class="card mt-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">โอนจ่ายบัญชี</h5>
+                                        <p>
+                                            <b>ธนาคาร:</b> กสิกร / kasikorn <br>
+                                            <b>ชื่อ:</b> อิอิ วุ้ววุ้ว <br>
+                                            <b>เลขยัญชี:</b> 1 877 3488999 0039 <br>
+                                        </p>
                                     </div>
-
-                                    <div class="card mt-4">
-                                        <div class="card-body">
-                                            <h5 class="card-title">ที่อยู่จัดส่ง</h5>
-                                                <p>ชื่อ: <%= address.firstname %> <%= address.lastname %></p>
-                                                <p><%= address.address %>, <%= address.city %>, โทรศัพท์: <%= address.phone %></p>
-                                        </div>
-                                    </div>
-                                    
                                 </div>
                             </div>
 
                             <div class="col-md-5 col-lg-4 col-xl-4 offset-lg-1 offset-xl-2">
-                                <div class="card bg-light">
+                                <form action="/order/confirm-payment/<%= order._id %>" method="POST" enctype="multipart/form-data" class="mt-4">
+                                    <div class="mb-3">
+                                        <label for="slipImage" class="form-label">อัพโหลดรูปสลิปการชำระเงิน</label>
+                                        <input class="form-control" type="file" id="slipImage" name="slipImage" accept="image/*" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-dark">แจ้งชำระเงิน</button>
+                                </form>
+                                <div class="card bg-light mt-4">
                                     <div class="card-body">
                                         <span class="fw-bold">ใบเสร็จ</span>
                                         <% order.items.forEach(item => { %>
@@ -68,21 +65,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- เพิ่ม card body อีกตัว -->
+
                                 <div class="card mt-4">
                                     <div class="card-body">
-                                        <h5 class="card-title">รายละเอียดการชำระเงิน</h5>
-                                        <p>โปรดชำระเงินภายใน 24 ชั่วโมงหลังจากที่ทำการสั่งซื้อ</p>
-                                        <p>กรุณาแจ้งการชำระเงินผ่านทางเมนู 'แจ้งชำระเงิน' หลังจากการโอนเงินเสร็จสมบูรณ์</p>
+                                        <h5 class="card-title">ที่อยู่จัดส่ง</h5>
+                                        <p class="mb-1"><strong>ชื่อ:</strong> <%= address.firstname %> <%= address.lastname %></p>
+                                        <p class="mb-1"><strong>ที่อยู่:</strong> <%= address.address %>, <%= address.city %></p>
+                                        <p class="mb-1"><strong>โทรศัพท์:</strong> <%= address.phone %></p>
                                     </div>
                                 </div>
-
-                                <a href="/notify-payment" class="btn btn-primary btn-lg">แจ้งชำระเงิน</a>
-                                <!-- /เพิ่ม card body อีกตัว -->
-
                             </div>
-
                         </div>
 
                     </div>

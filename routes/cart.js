@@ -4,21 +4,27 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const Address = require('../models/Address');
-const { isLogin } = require('../routes/setting');
 const { registerVersion } = require('firebase/app');
 
 // เพิ่มสินค้าเข้าตะกร้า
-router.post('/add-to-cart/:id', isLogin, async (req, res) => {
+router.post('/add-to-cart/:id',  async (req, res) => {
     const productId = req.params.id;
     const { quantity, size } = req.body;
     const product = await Product.findById(productId);
 
+    if (!req.user) {
+        req.flash('error', 'กรุณาเข้าสู่ระบบก่อน');
+        return res.redirect('/auth/login');
+    }
+
     if (!product) {
-        return res.json({ success: false, message: 'ไม่มีสินค้านี้ในระบบ' });
+        req.flash('error', 'เกิดข้อผิดพลาด ไม่มีสินค้าในระบบ');
+        return res.redirect('/');
     }
 
     if (quantity > product.stockQuantity) {
-        return res.json({ success: false, message: 'จำนวนสินค้าที่ต้องการเกินกว่าที่มีในสต็อก' });
+        req.flash('error', 'ไม่มีสินค้าในสต็อก หรือสินค้าหมด');
+        return res.redirect('/');
     }
 
     try {
@@ -47,7 +53,8 @@ router.post('/add-to-cart/:id', isLogin, async (req, res) => {
                     price: selectedSize.price
                 });
             } else {
-                return res.json({ success: false, message: 'ขนาดสินค้าที่เลือกไม่ถูกต้อง' });
+                req.flash('error', 'ขนาดสินค้าไม่ถูกต้อง');
+                return res.redirect('/');
             }
         }
 
@@ -55,8 +62,8 @@ router.post('/add-to-cart/:id', isLogin, async (req, res) => {
         cart.totalQuantity = cart.items.reduce((acc, item) => acc + item.quantity, 0);
 
         await cart.save();
-
-        res.redirect('/cart');
+        req.flash('success', `เพิ่มสินค้า ${product.productName} เข้าตะกร้าแล้ว`)
+        res.redirect(`/product/${productId}`);
     } catch (err) {
         console.log(err);
         res.redirect('/');
@@ -64,7 +71,7 @@ router.post('/add-to-cart/:id', isLogin, async (req, res) => {
 });
 
 // หน้าสินค้าในตะกร้าก่อน checkout 
-router.get('/', isLogin, async (req, res) => {
+router.get('/',  async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user._id })
         .populate({
@@ -95,13 +102,30 @@ router.get('/', isLogin, async (req, res) => {
 
         for (const categoryName in categoryCounts) {
             const numItems = categoryCounts[categoryName];
-            console.log(`Calculating shipping for ${categoryName}: ${numItems} items`);
 
             if (categoryName === "ต้นองุ่น") {
                 const boxes = Math.ceil(numItems / 3);
                 shippingCost += boxes * 150;
             } else if (categoryName === "ปุ๋ยน้ำหมัก") {
-                shippingCost += numItems * 70;
+                switch (numItems) {
+                    case 1:
+                        shippingCost += 40;
+                        break;
+                    case 2:
+                        shippingCost += 70;
+                        break;
+                    case 3:
+                        shippingCost += 70;
+                        break;
+                    case 4:
+                        shippingCost += 80;
+                        break;
+                    default:
+                        if (numItems > 4) {
+                            shippingCost += 100;
+                        }
+                        break;
+                }
             } else {
                 shippingCost += numItems * 50;
             }
@@ -117,7 +141,7 @@ router.get('/', isLogin, async (req, res) => {
 
 
 // เพิ่มจำนวนสินค้า
-router.post('/plus/:id', isLogin, async (req, res) => {
+router.post('/plus/:id',  async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size;
 
@@ -148,7 +172,7 @@ router.post('/plus/:id', isLogin, async (req, res) => {
 });
 
 // ลดจำนวนสินค้า
-router.post('/minus/:id', isLogin, async (req, res) => {
+router.post('/minus/:id',  async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size;
 
@@ -182,7 +206,7 @@ router.post('/minus/:id', isLogin, async (req, res) => {
 });
 
 // POST route to remove item from cart
-router.post('/remove-from-cart/:id', isLogin, async (req, res) => {
+router.post('/remove-from-cart/:id',  async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size; // รับค่า size จาก query string
 
@@ -227,7 +251,7 @@ router.post('/remove-from-cart/:id', isLogin, async (req, res) => {
 
 
 // เคลียร์ตะกร้า
-router.delete("/", isLogin, (req, res) => {
+router.delete("/",  (req, res) => {
     try {
         req.session.cart = null;
         req.flash('success', 'ลบสินค้าในตะกร้าสำเร็จ');

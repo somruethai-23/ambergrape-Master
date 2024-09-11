@@ -1,0 +1,23 @@
+<div class="container mt-4">
+    <h1>ผลการค้นหา</h1>
+    <p>ผลลัพธ์สำหรับ: <strong><%= searchTerm %></strong></p>
+
+    <% if (products.length > 0) { %>
+      <div class="row">
+        <% products.forEach(product => { %>
+          <div class="col-md-4 mb-4">
+            <div class="card">
+              <img src="<%= product.images %>" class="card-img-top" alt="<%= product.productName %>">
+              <div class="card-body">
+                <h5 class="card-title"><%= product.productName %></h5>
+                <p class="card-text"><%- product.description %></p>
+                <a href="/product/<%= product._id %>" class="btn btn-primary">ดูรายละเอียด</a>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <p>ไม่พบสินค้าที่ตรงกับการค้นหา</p>
+    <% } %>
+  </div>

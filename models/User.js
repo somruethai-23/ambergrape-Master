@@ -10,13 +10,11 @@ const userSchema = new mongoose.Schema(
         },
         username: {
             type: String,
-            required: true,
             unique: true,
             maxlength: [20, 'ชื่อผู้ใช้ห้ามยาวเกิน 20 ตัวอักษร'],
         },
         password: {
             type: String,
-            required: true,
             minlength: [8, 'รหัสผ่านควรมีอย่างน้อย 8 ตัวอักษร'],
         },        
         isAdmin: {
@@ -33,6 +31,9 @@ const userSchema = new mongoose.Schema(
             ref: 'Order',
             },
         ],
+        googleId: { type: String },
+        email: { type: String },
+        displayName: { type: String },
     }
 );
 

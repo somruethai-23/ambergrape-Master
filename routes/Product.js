@@ -1,6 +1,236 @@
 const router = require("express").Router();
 const Product = require("../models/Product");
 const Category = require("../models/Category");
+const {  isAdmin } = require("../function/setting");
+
+// firebase Storage
+const { Storage } = require('@google-cloud/storage');
+const path = require('path');
+const multer = require('multer');
+const { connectStorageEmulator } = require("firebase/storage");
+
+const storage = new Storage({
+    projectId: process.env.project_ID,
+    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-4ae9158a1f.json'),
+});
+
+const bucket = storage.bucket(process.env.storage_BUCKET);
+const upload = multer({ storage: multer.memoryStorage() });
+
+// --------------------------------------- Product MANAGE Page ----------------------------------------------
+router.get('/productmanagement',  isAdmin, async (req,res)=>{
+        const products = await Product.find().populate('category');
+    res.render('admin/productManagement', {req:req, products: products});
+});
+
+// --------------------------------------- ADD product page ----------------------------------------------
+router.get('/add-product',  isAdmin, async (req, res) => {
+    const products = await Product.find();
+    const categories = await Category.find();
+    res.render('product/productAdd', {req:req, products: products, categories: categories, layout: false});
+});
+
+router.post('/add-product', upload.array("images"), async (req, res) => {
+
+    try {
+        const { productName, price, stockQuantity, status, sizes, category, description} = req.body;
+
+        const parsedSizes = sizes.map(sizeObj => ({
+            size: sizeObj.size.trim(),
+            price: parseFloat(sizeObj.price)
+        }));
+
+        // สร้างอาร์เรย์เพื่อเก็บ URL หรือที่อยู่ของรูปภาพทั้งหมด
+        const imageUrls = [];
+        
+        // วนลูปผ่านทุกไฟล์ที่อัปโหลด
+        for (const file of req.files) {
+            const imageUrl = await uploadImageToStorage(file);
+            imageUrls.push(imageUrl);
+        }
+
+        // สร้างสินค้าใหม่โดยใช้ URL ของรูปภาพที่ได้รับ
+        const newProduct = new Product({
+            productName,
+            price,
+            description,
+            stockQuantity,
+            images: imageUrls, // ใช้ properties ชื่อ images เพื่อเก็บ URL ของรูปภาพ
+            status,
+            sizes: parsedSizes,
+            category,
+        });
+
+        await newProduct.save();
+
+        await Category.updateOne(
+            { _id: category },
+            { $push: { products: newProduct } }
+        );
+
+        req.flash('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
+        res.redirect('/admin/productManagement');
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'เกิดข้อผิดพลาดในการ เพิ่มสินค้า');
+        res.redirect('/admin/productManagement');
+    }
+});
+
+// บันทึกภาพลง firebase storage
+async function uploadImageToStorage(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            reject('No file uploaded');
+        }
+
+        const fileName = Date.now() + '-' + path.basename(file.originalname);
+        const filePath = `productImage/${fileName}`; // เส้นทางที่ต้องการบันทึกไฟล์
+
+        const fileUploadStream = bucket.file(filePath).createWriteStream({
+            metadata: {
+                contentType: file.mimetype,
+            },
+        });
+
+        fileUploadStream.on('error', (err) => {
+            console.error(err);
+            reject('Error uploading file');
+        });
+
+        fileUploadStream.on('finish', () => {
+            const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+            resolve(imageUrl);
+        });
+
+        fileUploadStream.end(file.buffer);
+    });
+}
+
+// ลบภาพใน firebase storage
+async function deleteImageFromStorage(imageUrl) {
+    const filePath = imageUrl.split('/').slice(-2).join('/');
+    await bucket.file(filePath).delete();
+}
+
+
+
+// --------------------------------------- UPDATE product page ----------------------------------------------
+router.get('/edit-product/:productId',  isAdmin, async (req, res) => {
+    const productId = req.params.productId;
+
+    try {
+        const product = await Product.findById(productId).populate('category');
+        const categories = await Category.find();
+
+        if (!product) {
+            req.flash('error', 'ไม่พบสินค้าที่ต้องการแก้ไข');
+            return res.redirect('/admin/productManagement');
+        }
+
+        res.render('product/productEdit', { req: req, product: product, categories: categories, layout: false});
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'มีปัญหาในการแก้ไขสินค้า');
+        res.redirect('/admin/productManagement');
+    }
+});
+
+router.post('/edit-product/:productId', upload.array("images"),  isAdmin, async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const { productName, description, stockQuantity, status, sizes, category } = req.body;
+        const deleteImages = req.body.deleteImages || [];
+
+        console.log(req.body);
+
+        // ตรวจสอบว่า sizes เป็นอาเรย์หรือไม่
+        if (!Array.isArray(sizes)) {
+            console.error("sizes is not an array");
+            return res.redirect('/admin/productManagement');
+        }
+
+        // กรองข้อมูลไซส์และราคาที่ไม่ว่างเปล่า
+        const filteredSizes = sizes.filter(sizeObj => sizeObj.size.trim() !== '' && sizeObj.price.trim() !== '');
+
+        console.log(filteredSizes);
+        // Parse sizes after filtering
+        const parsedSizes = filteredSizes.map(sizeObj => ({
+            size: sizeObj.size.trim(),
+            price: parseFloat(sizeObj.price)
+        }));
+
+        // Find the product by ID
+        const product = await Product.findById(productId);
+        if (!product) {
+            req.flash('error', 'ไม่พบสินค้าที่ต้องการแก้ไข');
+            return res.redirect('/admin/productManagement');
+        }
+
+        // Delete selected images
+        for (const imageUrl of deleteImages) {
+            await deleteImageFromStorage(imageUrl);
+            // Remove deleted images from the product's images array
+            product.images = product.images.filter(image => image !== imageUrl);
+        }
+
+        // Update product properties
+        product.productName = productName;
+        product.description = description;
+        product.stockQuantity = stockQuantity;
+        product.status = status;
+        product.sizes = parsedSizes;
+        product.category = category;
+
+        // Upload new images (if any)
+        const newImageUrls = [];
+        if (req.files) {
+            for (const file of req.files) {
+                const imageUrl = await uploadImageToStorage(file);
+                newImageUrls.push(imageUrl);
+            }
+            // Append new images to the product's images array
+            product.images = product.images.concat(newImageUrls);
+        }
+
+        // Save the updated product
+        await product.save();
+
+        req.flash('success', 'อัพเดตสินค้าเรียบร้อยแล้ว');
+        res.redirect('/admin/productManagement');
+    } catch (error) {
+        req.flash('error', 'มีปัญหาการอัพเดทสินค้า');
+        console.error(error);
+        res.redirect('/admin/productManagement');
+    }
+});
+
+
+// --------------------------------------- DELETE all products ----------------------------------------------
+router.post('/delete-all-products',  isAdmin, async (req, res) => {
+    try {
+        await Product.deleteMany({});
+        req.flash('success', 'ลบสินค้าทั้งหมดเรียบร้อยแล้ว');
+        res.redirect('/admin/productManagement');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error deleting all products');
+    }
+});
+
+// --------------------------------------- DELETE product by ID ----------------------------------------------
+router.post('/delete-product/:productId',  isAdmin, async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        await Product.findByIdAndDelete(productId);
+        req.flash('success', 'ลบสินค้าเรียบร้อยแล้ว');
+        res.redirect('/admin/productManagement');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error deleting product');
+    }
+});
+
 
 router.get('/:productId', async (req, res) => {
     try {
@@ -18,6 +248,5 @@ router.get('/:productId', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
 
 module.exports = router;

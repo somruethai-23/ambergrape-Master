@@ -1,47 +1,49 @@
+<div class="container bg-white rounded-top mt-5" id="zero-pad">
+    <div class="row d-flex justify-content-center">
+        <div class="col-lg-10 col-12 pt-3">
+            <!-- แสดง error หรือ success -->
+            <% if (error && error.length) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error[0] %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            <% if (success && success.length) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success[0] %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
 
-   <div class="container bg-white rounded-top mt-5" id="zero-pad">
-       <div class="row d-flex justify-content-center">
-           <div class="col-lg-10 col-12 pt-3">
-               <% if (error && error.length) { %>
-                   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                       <%= error[0] %>
-                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                   </div>
-               <% } %>
-               <% if (success && success.length) { %>
-                   <div class="alert alert-success alert-dismissible fade show" role="alert">
-                       <%= success[0] %>
-                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                   </div>
-               <% } %>
-               <div class="table-responsive">
-                   <% if (cart && cart.items && cart.items.length > 0) { %>
-                       <table class="table">
-                           <thead>
-                               <tr>
-                                   <th scope="col">สินค้า</th>
-                                   <th scope="col">ราคา</th>
-                                   <th scope="col">ไซส์/ขนาด</th>
-                                   <th scope="col" class="text-center">จำนวน</th>
-                                   <th scope="col">ราคารวม</th>
-                                   <th scope="col"></th>
-                               </tr>
-                           </thead>
-                           <tbody>
-                               <% cart.items.forEach(item => { %>                
-                               <tr>
-                                   <td>
-                                       <div class="d-flex flex-row align-items-center">
-                                           <img src="<%= item.productId.images[0] %>" class="rounded-circle me-2" style="width: 45px; height: 45px;">
-                                           <div class="d-flex flex-column pl-md-3 pl-1">
-                                               <h8><%= item.productId.productName %></h8>
-                                               <div><span class="text-small text-muted"><%= item.productId.category.categoryName %></span></div>
-                                           </div>
-                                       </div>
-                                   </td>
-                                   <td id="price-<%= item.productId._id %>-<%= item.size %>">฿ <%= item.price %></td>
-                                   <td><%= item.size %></td>
-                                   <td>
+            <div class="table-responsive">
+                <!-- ตรวจสอบว่ามีสินค้าในตะกร้าหรือไม่ -->
+                <% if (cart && cart.items && cart.items.length > 0) { %>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">สินค้า</th>
+                                <th scope="col">ราคา</th>
+                                <th scope="col">ไซส์/ขนาด</th>
+                                <th scope="col" class="text-center">จำนวน</th>
+                                <th scope="col">ราคารวม</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% cart.items.forEach(item => { %>                
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-row align-items-center">
+                                        <img src="<%= item.productId.images[0] %>" class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                                        <div class="d-flex flex-column pl-md-3 pl-1">
+                                            <h8><%= item.productId.productName %></h8>
+                                            <div><span class="text-small text-muted"><%= item.productId.category.categoryName %></span></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td id="price-<%= item.productId._id %>-<%= item.size %>">฿ <%= item.price %></td>
+                                <td><%= item.size %></td>
+                                <td>
                                     <div class="d-flex align-items-center">
                                         <form id="minus-form-<%= item.productId._id %>-<%= item.size %>" action="/cart/minus/<%= item.productId._id %>?size=<%= item.size %>" method="POST">
                                             <button type="submit" class="btn btn-sm btn-minus"><i class="fas fa-minus-square" style="color: #000000;"></i></button>
@@ -51,67 +53,63 @@
                                             <button type="submit" class="btn btn-sm btn-plus"><i class="fas fa-plus-square" style="color: #000000;"></i></button>
                                         </form>
                                     </div>                                    
-                                   </td>
-                                   <td id="subTotal-<%= item.productId._id %>-<%= item.size %>">฿ <%= (item.price * item.quantity).toLocaleString() %></td>
-                                   <td>
-                                       <form action="/cart/remove-from-cart/<%= item.productId._id %>?size=<%= item.size %>" method="POST" style="display:inline;">
-                                           <button type="submit" class="close" style="background:none; border:none;">&times;</button>
-                                       </form>
-                                   </td>
-                               </tr>
-                               <% }) %>
-                           <% } else { %>
-                                <h1 class="text-center">ไม่มีสินค้าในตะกร้า</h1>
-                           <% } %>
-                           </tbody>
-                       </table>
-                   </div>
-               </div>
-           </div>
-           <form action="/order/place-order" method="POST">
-   <div class="container bg-light rounded-bottom py-4" id="zero-pad">
-       <div class="row d-flex justify-content-center">
-           <div class="col-lg-10 col-12">
-               <div class="d-flex justify-content-between align-items-center">
-                   <a href="/" class="btn btn-sm bg-light border border-dark">GO BACK</a>
-                   <div id="footer-font" class="text-end mt-3">
-                    <div class="row">
-                        <div class="col-12">
-                            <b>ราคาสินค้า: <span id="totalProductPrice">฿ <%= cart.totalPrice.toLocaleString() %></span></b>
-                        </div>
-                        <div class="col-12">
-                            <b>ค่าส่ง: <span id="ShippingCost">฿ <%= shippingCost.toLocaleString() %></span></b>
-                        </div>
-                        <div class="col-12">
-                            <b>ราคารวม: <span id="totalPriceFooter">฿ <%= (cart.totalPrice + shippingCost).toLocaleString() %></span></b>
-                        </div>
-                    </div>
-                </div>
-                
-               </div>
-           </div>
-       </div>
-   </div>
-
-        <div class="card bg-dark text-white rounded-3 my-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="mb-0">ที่อยู่จัดส่ง</h5>
-                </div>
-                <% if (address) { %>
-                    <p>ชื่อ: <%= address.firstname %> <%= address.lastname %></p>
-                    <p><%= address.address %>, <%= address.city %>, โทรศัพท์: <%= address.phone %></p>
-                    <hr class="my-4">
+                                </td>
+                                <td id="subTotal-<%= item.productId._id %>-<%= item.size %>">฿ <%= (item.price * item.quantity).toLocaleString() %></td>
+                                <td>
+                                    <form action="/cart/remove-from-cart/<%= item.productId._id %>?size=<%= item.size %>" method="POST" style="display:inline;">
+                                        <button type="submit" class="close" style="background:none; border:none;">&times;</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
                 <% } else { %>
-                    <p>ยังไม่ได้เพิ่มที่อยู่จัดส่ง</p>
-                    <a href="/user/profile-edit/<%= req.user._id %>" class="btn btn-light btn-block btn-lg">เพิ่มที่อยู่จัดส่ง</a>
+                    <div class="text-center">
+                        <h1>ไม่มีสินค้าในตะกร้า</h1>
+                        <p>คุณยังไม่ได้เพิ่มสินค้าใดๆ ในตะกร้า</p>
+                        <a href="/" class="btn btn-outline-dark mt-3">
+                            <i class="fa-solid fa-basket-shopping" style="color: #000000;"></i> ไปซื้อสินค้า
+                        </a>
+                    </div>
                 <% } %>
             </div>
         </div>
     </div>
-</div>
 
-   <input type="hidden" name="totalCost" value="<%= (cart.totalPrice + shippingCost) %>">
-   <input type="hidden" name="shippingCost" value="<%= shippingCost %>">
-   <button type="submit" class="btn btn-light w-100 py-3">ยืนยันการสั่งซื้อ</button>
-</form>
+    <!-- ตรวจสอบก่อนแสดงส่วนรวมราคา -->
+    <% if (cart && cart.items && cart.items.length > 0) { %>
+        <div class="container bg-light rounded-bottom py-4" id="zero-pad">
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-10 col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="/" class="btn btn-sm btn-outline-dark"><i class="fa-solid fa-caret-left" style="color: #000000;"></i> กลับไปหน้าแรก</a>
+                        <div id="footer-font" class="text-end mt-3">
+                            <div class="row">
+                                <div class="col-12">
+                                    <b>ราคาสินค้า: <span id="totalProductPrice">฿ <%= cart.totalPrice.toLocaleString() %></span></b>
+                                </div>
+                                <div class="col-12">
+                                    <b>ค่าส่ง: <span id="ShippingCost">฿ <%= shippingCost.toLocaleString() %></span></b>
+                                </div>
+                                <div class="col-12">
+                                    <b>ราคารวม: <span id="totalPriceFooter">฿ <%= (cart.totalPrice + shippingCost).toLocaleString() %></span></b>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form action="/order/place-order" method="POST">
+            <input type="hidden" name="totalCost" value="<%= (cart.totalPrice + shippingCost) %>">
+            <input type="hidden" name="shippingCost" value="<%= shippingCost %>">
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-outline-dark btn-sm">
+                    ยืนยันการสั่งซื้อ
+                </button>
+            </div>
+        </form>
+    <% } %>
+</div>

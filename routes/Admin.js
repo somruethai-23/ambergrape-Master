@@ -1,235 +1,203 @@
 const router = require("express").Router();
 const Product = require("../models/Product");
+const Order = require("../models/Order");
 const Category = require("../models/Category");
-const { isLogin, isAdmin } = require("./setting");
+const User = require('../models/User');
+const { isAdmin } = require("../function/setting");
+const { calculateMonthlyEarnings, calculateAnnualEarnings, getMonthlyEarnings, bestSellingAll, calculateMembershipAge } = require("../function/calculate");
+const dayjs = require('dayjs');
+const duration = require('dayjs/plugin/duration');
+dayjs.extend(duration);
 
-// firebase Storage
-const { Storage } = require('@google-cloud/storage');
-const path = require('path');
-const multer = require('multer');
 
-const storage = new Storage({
-    projectId: process.env.project_ID,
-    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-4ae9158a1f.json'),
+router.get('/dashboard', isAdmin, async (req, res) => {
+    try {
+        const monthlyEarnings = await calculateMonthlyEarnings();
+        const annualEarnings = await calculateAnnualEarnings();
+        const earnings = await getMonthlyEarnings();
+        const orders = await Order.find();
+        const pendingOrders = orders.filter(order => order.orderStatus === "รอเช็คเงินเข้า").length;
+        const bestSelling = await bestSellingAll();
+
+        const categories = await Category.find();
+
+        res.render('admin/dashboard', { 
+            categories: categories,
+            monthlyEarnings: monthlyEarnings, 
+            annualEarnings: annualEarnings[0], 
+            layout: false, 
+            pendingOrders,
+            earnings,
+            bestSelling
+        });
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-const bucket = storage.bucket(process.env.storage_BUCKET);
-const upload = multer({ storage: multer.memoryStorage() });
+
 
 // --------------------------------------- Product MANAGE Page ----------------------------------------------
-router.get('/productmanagement', isLogin, isAdmin, async (req,res)=>{
+router.get('/manage-product', isAdmin, async (req, res) => {
+    try {
         const products = await Product.find().populate('category');
-    res.render('admin/productManagement', {req:req, products: products});
+        res.render('admin/productManagement', { req: req, products: products });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-// --------------------------------------- ADD product page ----------------------------------------------
-router.get('/add-product', isLogin, isAdmin, async (req, res) => {
-    const products = await Product.find();
-    const categories = await Category.find();
-    res.render('admin/productAdd', {req:req, products: products, categories: categories, layout: false});
+
+
+// -------------- Customer --------------------
+router.get('/manage-order', isAdmin, async (req,res)=> {
+    const orders = await Order.find().populate({
+        path: 'items.product', // ดึงข้อมูลสินค้าใน items.product
+        select: 'productName'   // เลือกเฉพาะชื่อสินค้า
+    }).populate('user'); // ดึงข้อมูลผู้ใช้
+
+    res.render('admin/orderManagement', { orders, dayjs, layout:false });
 });
 
-router.post('/add-product', upload.array("images"), async (req, res) => {
-
+router.post('/update-status/:id', async (req, res) => {
     try {
-        const { productName, price, stockQuantity, status, sizes, category, description} = req.body;
+        const orderId = req.params.id;
+        const { status } = req.body;
 
-        const parsedSizes = sizes.map(sizeObj => ({
-            size: sizeObj.size.trim(),
-            price: parseFloat(sizeObj.price)
-        }));
-
-        // สร้างอาร์เรย์เพื่อเก็บ URL หรือที่อยู่ของรูปภาพทั้งหมด
-        const imageUrls = [];
-        
-        // วนลูปผ่านทุกไฟล์ที่อัปโหลด
-        for (const file of req.files) {
-            const imageUrl = await uploadImageToStorage(file);
-            imageUrls.push(imageUrl);
+        // ตรวจสอบว่ามีสถานะที่ได้รับเป็นสถานะถัดไป
+        const validStatuses = ['ยังไม่ได้ชำระ', 'รอเช็คเงินเข้า', 'กำลังแพ็คสินค้า', 'จัดส่ง' , 'ยกเลิก'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'สถานะไม่ถูกต้อง', receivedStatus: status });
         }
 
-        // สร้างสินค้าใหม่โดยใช้ URL ของรูปภาพที่ได้รับ
-        const newProduct = new Product({
-            productName,
-            price,
-            description,
-            stockQuantity,
-            images: imageUrls, // ใช้ properties ชื่อ images เพื่อเก็บ URL ของรูปภาพ
-            status,
-            sizes: parsedSizes,
-            category,
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'ไม่พบออเดอร์' });
+        }
+
+        order.orderStatus = status;
+        await order.save();
+
+        res.redirect('/admin/manage-order');
+    } catch (error) {
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะออเดอร์' });
+        console.log(error);
+    }
+});
+
+router.post('/cancel-order/:id', async (req, res) => {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    try {
+        const order = await Order.findById(id);
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        order.orderStatus = 'ยกเลิก';
+        order.cancelReason = reason;
+        await order.save();
+
+        res.redirect('/admin/manage-customer');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+router.get('/manage-customer', isAdmin, async (req, res) => {
+    try {
+        const { search = '', sort = 'createdAt', order = 'asc' } = req.query;
+
+        // Validate sort and order parameters
+        const validSortFields = ['membershipAge', 'orderCount', 'status', 'createdAt'];
+        const sortField = validSortFields.includes(sort) ? sort : 'createdAt';
+        const sortOrder = order === 'desc' ? -1 : 1;
+
+        // Build the query
+        const query = {
+            $or: [
+                { username: new RegExp(search, 'i') },
+                { email: new RegExp(search, 'i') }
+            ]
+        };
+
+        // Fetch users with search query
+        const users = await User.find(query);
+
+        const userData = [];
+        
+        for (let user of users) {
+
+            const registrationDate = user.createdAt;
+            const membershipAge = calculateMembershipAge(user.createdAt);
+
+            const orders = await Order.find({ user: user._id }).countDocuments();
+
+            userData.push({
+                username: user.username,
+                email: user.email,
+                registrationDate: dayjs(registrationDate).format('D MMMM YYYY'),
+                membershipAge,
+                orderCount: orders,
+                isAdmin: user.isAdmin,
+                _id: user._id,
+            });
+        }
+
+        const adminCount = users.filter(user => user.isAdmin).length;
+        const customerCount = users.length - adminCount;   
+
+        // Sort userData array
+        userData.sort((a, b) => {
+            if (sortField === 'status') {
+                return (a.isAdmin > b.isAdmin ? 1 : -1) * sortOrder;
+            }
+            return (a[sortField] > b[sortField] ? 1 : -1) * sortOrder;
         });
 
-        await newProduct.save();
-
-        await Category.updateOne(
-            { _id: category },
-            { $push: { products: newProduct } }
-        );
-
-        req.flash('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
+        res.render('admin/userManagement', { 
+            users: userData, 
+            dayjs, 
+            layout: false, 
+            search, 
+            sort, 
+            order,
+            adminCount,
+            customerCount
+        });
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        req.flash('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลลูกค้า');
         res.redirect('/');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error adding product');
     }
 });
 
 
-async function uploadImageToStorage(file) {
-    return new Promise((resolve, reject) => {
-        if (!file) {
-            reject('No file uploaded');
+// เปลี่ยนสถานะลูกค้าเป็น Admin
+router.post('/change-status/:userId', isAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        console.log('Before:', user.isAdmin);  // ดูสถานะก่อนเปลี่ยน
+        if (!user) {
+            req.flash('error', 'ไม่พบผู้ใช้');
+            return res.redirect('/admin/manage-customer');
         }
 
-        const fileName = Date.now() + '-' + path.basename(file.originalname);
-        const filePath = `productImage/${fileName}`; // เส้นทางที่ต้องการบันทึกไฟล์
+        // เปลี่ยนสถานะ
+        user.isAdmin = !user.isAdmin;  // สลับสถานะจาก true เป็น false หรือ false เป็น true
+        await user.save();
 
-        const fileUploadStream = bucket.file(filePath).createWriteStream({
-            metadata: {
-                contentType: file.mimetype,
-            },
-        });
-
-        fileUploadStream.on('error', (err) => {
-            console.error(err);
-            reject('Error uploading file');
-        });
-
-        fileUploadStream.on('finish', () => {
-            const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-            resolve(imageUrl);
-        });
-
-        fileUploadStream.end(file.buffer);
-    });
-}
-
-
-    
-
-// --------------------------------------- UPDATE product page ----------------------------------------------
-router.get('/edit-product/:productId', isLogin, isAdmin, async(req,res) => {
-    const productId = req.params.productId;
-    const product = await Product.findById(productId);
-
-    if (!product) {
-        req.flash('error', 'ไม่พบสินค้าที่ต้องการแก้ไข');
-        return res.redirect('/admin/productManagement');
-    };
-    res.render('admin/productEdit', { req: req, product: product });
-});
-
-router.post('/edit-product/:productId', isLogin, isAdmin, async (req, res) => {
-    try {
-        const productId = req.params.productId;
-        const { productName, price, description, stockQuantity, status, sizes, category } = req.body;
-        
-        const product = await Product.findById(productId);
-        if (!product) {
-            req.flash('error', 'ไม่พบสินค้าที่ต้องการแก้ไข');
-            return res.redirect('/admin/productManagement');
-        }
-
-        product.productName = productName;
-        product.price = price;
-        product.description = description;
-        product.stockQuantity = stockQuantity;
-        product.status = status;
-        product.sizes = sizes.split(',').map(size => size.trim());
-        product.category = category;
-
-        await product.save();
-
-        req.flash('success', 'อัพเดตสินค้าเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
+        req.flash('success', 'เปลี่ยนสถานะผู้ใช้เรียบร้อยแล้ว');
+        res.redirect('/admin/manage-customer');
     } catch (error) {
-        req.flash('error', 'มีปัญหาการอัพเดทสินค้า');
-        res.redirect('/admin/productManagement');
-    }
-});
-
-
-
-
-// --------------------------------------- DELETE all products ----------------------------------------------
-router.post('/delete-all-products', isLogin, isAdmin, async (req, res) => {
-    try {
-        await Product.deleteMany({});
-        req.flash('success', 'ลบสินค้าทั้งหมดเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error deleting all products');
-    }
-});
-
-// --------------------------------------- DELETE product by ID ----------------------------------------------
-router.post('/delete-product/:productId', isLogin, isAdmin, async (req, res) => {
-    try {
-        const productId = req.params.productId;
-        await Product.findByIdAndDelete(productId);
-        req.flash('success', 'ลบสินค้าเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error deleting product');
-    }
-});
-
-
-// --------------------------------------- CATEGORIES ----------------------------------------------
-router.get('/categories', isLogin, isAdmin, async(req,res)=> {
-    try {
-        const categories = await Categories.find();
-        res.render('admin/categories', { categories: categories, req:req });
-    } catch (error) {
-        req.flash('error', 'ไม่สามารถเข้าจัดการหน้าหมวดหมู่ได้')
-        console.error(error);
-        res.redirect('/admin/productManagement');
-    }
-});
-
-router.post('/add-category', isLogin, isAdmin, async (req, res) => {
-    try {
-        const { categoryName } = req.body;
-
-        // ตรวจสอบว่า categoryName ไม่ว่างเปล่า
-        if (!categoryName) {
-            req.flash('error', 'กรุณาใส่ชื่อหมวดหมู่');
-            res.redirect('/admin/categories');
-        }
-
-        // ตรวจสอบว่าหมวดหมู่นี้มีอยู่แล้วหรือไม่
-        const existingCategory = await Categories.findOne({ categoryName });
-        if (existingCategory) {
-            req.flash('error', 'มีหมวดหมู่นี้อยู่แล้ว');
-            res.redirect('/admin/categories');
-        }
-
-        // สร้างหมวดหมู่ใหม่
-        const newCategory = new Categories({ categoryName });
-        await newCategory.save();
-
-        req.flash('success', 'เพิ่มหมวดหมู่สำเร็จ');
-            res.redirect('/admin/categories');
-    } catch (error) {
-        req.flash('error', 'มีข้อผิดพลาดเกิดขึ้นจึงไม่สามารถเพิ่มหมวดหมู่ได้');
-        res.redirect('/admin/categories');
-    }
-});
-
-// DELETE 
-router.post('/delete-category/:id', isLogin, isAdmin, async (req, res) => {
-    try {
-        const categoryId = req.params.id;
-        // ลบหมวดหมู่จากฐานข้อมูล
-        await Categories.findByIdAndDelete(categoryId);
-        req.flash('success', 'ลบหมวดหมู่สำเร็จ');
-        res.redirect('/admin/categories');
-    } catch (error) {
-        req.flash('error', 'เกิดข้อผิดพลาดในการลบหมวดหมู่');
-        res.redirect('/admin/categories');
+        console.error('Error changing user status:', error);
+        req.flash('error', 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะผู้ใช้');
+        res.redirect('/admin/manage-customer');
     }
 });
 

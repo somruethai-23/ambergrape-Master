@@ -7,25 +7,17 @@ const mongoose = require('mongoose');
 const ejs = require('ejs');
 const expressLayout = require('express-ejs-layouts');
 const flash = require('connect-flash');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
 const MongoStore = require('connect-mongo');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const { decodeToken } = require('./function/tokenGenerate');
+
 
 // Model
 const Product = require('./models/Product');
 const User = require('./models/User');
 const Order = require('./models/Order');
-
-//Routes 
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/Admin');
-const productRoutes = require('./routes/Product');
-const userRoutes = require('./routes/user');
-const cartRoutes = require('./routes/cart');
-const orderRoutes = require('./routes/order');
-
-
 
 const mongoDB = process.env.MONGO_URL;
 
@@ -43,70 +35,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(expressLayout);
 app.use(flash());
+app.use(cookieParser());
 
 const mongoStore = MongoStore.create({
     mongoUrl: process.env.MONGO_URL,
     ttl: 14 * 24 * 60 * 60, 
 });  
 
-
-// ตั้งค่า passport-local strategy
-passport.use(new LocalStrategy(
-    async (username, password, done) => {
-        try {
-          const user = await User.findOne({ username: username });
-          if (!user) {
-            return done(null, false, { message: 'Incorrect username.' });
-          }
-          if (!user.validPassword(password)) {
-            return done(null, false, { message: 'Incorrect password.' });
-          }
-          return done(null, user);
-        } catch (err) {
-          return done(err);
-        }
-      }
-));
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-  
-passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await User.findById(id);
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  });
-
-// session login logout
 app.use(session({
-    secret: process.env.SEC_KEY,
-    resave: false,
-    saveUninitialized: true,
-    store: mongoStore,
+  secret: process.env.SEC_KEY,
+  resave: false,
+  saveUninitialized: false,
+  store: mongoStore,
+  cookie: { secure: false }  // ควรเป็น true ถ้าใช้ HTTPS
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-app.use((req, res, next) => {
-  res.locals.success = req.flash('success');
-  res.locals.error = req.flash('error');
-  res.locals.req = req;
-  res.locals.layout = false;
-  
-  if (req.isAuthenticated()) {
-      res.locals.user = req.user;
-  } else {
-      res.locals.user = null;
-  }
-
-  next();
-});
 
 app.set('app', path.join(__dirname, 'app'));
 app.set('view engine', 'ejs');
@@ -114,6 +57,53 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('layout extractScripts', true);
 app.set('layout extractStyles', true);
 app.set('layout', 'layout/layout');
+app.use('/tinymce', express.static(path.join(__dirname, 'node_modules', 'tinymce')));
+
+const authenticateToken = async (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (token) {
+      try {
+          const decoded = jwt.verify(token, process.env.JWT_SEC);
+          req.user = await User.findById(decoded.id).select('-password');
+      } catch (err) {
+          console.error('Token verification failed:', err);
+          req.user = null;
+      }
+  } else {
+      req.user = null;
+  }
+  next();
+};
+
+app.use(authenticateToken);
+
+app.use((req, res, next) => {
+  res.locals.user = req.user || null; // ส่งข้อมูล user ไปยังทุกๆ template
+  next();
+});
+
+app.use((req, res, next) => {
+  res.locals.error = req.flash('error');
+  res.locals.success = req.flash('success');
+  next();
+});
+
+
+app.locals.getOrderProgress = function(orderStatus) {
+  const statuses = ['ยังไม่ได้ชำระ', 'ชำระแล้ว', 'กำลังดำเนินการ', 'จัดส่งแล้ว', 'สำเร็จ'];
+  const index = statuses.indexOf(orderStatus);
+  return (index + 1) / statuses.length * 100;
+};
+
+//Routes 
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/Admin');
+const productRoutes = require('./routes/Product');
+const userRoutes = require('./routes/user');
+const cartRoutes = require('./routes/cart');
+const orderRoutes = require('./routes/order');
+const categoriesRoutes = require('./routes/categories');
 
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
@@ -121,37 +111,43 @@ app.use('/product', productRoutes);
 app.use('/user', userRoutes);
 app.use('/cart', cartRoutes);
 app.use('/order', orderRoutes);
-
-function injectUser(req, res, next) {
-  if (req.isAuthenticated()) { // ตรวจสอบว่าผู้ใช้ล็อกอินอยู่หรือไม่
-      res.locals.user = req.user; // กำหนด user ให้กับ res.locals เพื่อให้สามารถเข้าถึงใน EJS ได้
-  } else {
-      res.locals.user = null;
-  }
-  next();
-}
-
-app.use(injectUser);
-
-
-
-
-
+app.use('/categories', categoriesRoutes);
 
 app.get('/', async(req, res) => {
+
     try {
       const products = await Product.find().populate('category');
 
-        res.render('index', { products: products, req: req, laysout: false });
+        res.render('index', { products: products ,layout: false, req:req });
     } catch (error) {
         console.log('การดึงข้อมูลผิดพลาด', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-
-
+// Add this route to your Express app
+app.get('/search', async (req, res) => {
+  const searchTerm = req.query.q || '';
+  try {
+      // Use regex for case-insensitive search
+      const products = await Product.find({
+          $or: [
+              { productName: { $regex: searchTerm, $options: 'i' } },
+              { description: { $regex: searchTerm, $options: 'i' } }
+          ]
+      }).populate('category');
+      
+      res.render('searchResults', { products: products, searchTerm: searchTerm, req:req });
+  } catch (error) {
+      console.log('Error searching for products:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
 
 app.listen(process.env.PORT, () => {
     console.log(`Server working at ${process.env.PORT}`);
+});
+
+app.use((req, res, next) => {
+  res.status(404).render('error');  // ไม่ต้องใช้เส้นทางแบบเต็ม
 });

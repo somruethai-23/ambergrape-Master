@@ -40,12 +40,18 @@ const orderSchema = new Schema({
     },
     orderStatus: {
         type: String,
-        enum: ['ยังไม่ได้ชำระ', 'ชำระแล้ว', 'กำลังดำเนินการ', 'จัดส่งแล้ว', 'สำเร็จ', 'ยกเลิก'],
+        enum: ['ยังไม่ได้ชำระ', 'รอเช็คเงินเข้า', 'กำลังแพ็คสินค้า', 'จัดส่ง' , 'ยกเลิก'],
         default: 'ยังไม่ได้ชำระ'
     },
-    orderDate: {
+    createdAt: {
         type: Date,
         default: Date.now
+    },
+    slipImage: {
+        type: String
+    },
+    cancelReason: { 
+        type: String
     }
 });
 

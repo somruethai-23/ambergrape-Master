@@ -1,10 +1,14 @@
 const router = require("express").Router();
-const { isLogin, isAdmin} = require("./setting");
+const {  isAdmin} = require("../function/setting");
 const User = require("../models/User");
 const Address = require("../models/Address");
+const Order = require("../models/Order");
+const dayjs = require('dayjs');
+require('dayjs/locale/th');
+dayjs.locale('th');
 
 
-router.get("/profile/:userId", isLogin, async (req,res)=> {
+router.get("/profile/:userId",  async (req,res)=> {
     const user = await User.findById(req.params.userId);
     if (!user) {
         req.flash('error', 'กรุณาลงชื่อเข้าใช้ก่อน');
@@ -16,7 +20,7 @@ router.get("/profile/:userId", isLogin, async (req,res)=> {
     res.render('user/profile', { req:req, user:user, addresses});
 });
 
-router.get("/profile-edit/:userId/", isLogin, async (req,res)=> {
+router.get("/profile-edit/:userId/",  async (req,res)=> {
     const user = await User.findById(req.params.userId);
     if (!user) {
         req.flash('error', 'กรุณาลงชื่อเข้าใช้ก่อน');
@@ -26,7 +30,7 @@ router.get("/profile-edit/:userId/", isLogin, async (req,res)=> {
 });
 
 // แก้ไขข้อมูลส่วนตัว
-router.post("/profile-edit/:userId", isLogin, async (req, res) => {
+router.post("/profile-edit/:userId",  async (req, res) => {
     try {
         const { firstname, lastname, address, city, postalCode, phone } = req.body;
 
@@ -68,7 +72,7 @@ router.post("/profile-edit/:userId", isLogin, async (req, res) => {
 
 
 // update username
-router.put("/profile/:userId", isLogin, async (req,res)=>{
+router.put("/profile/:userId",  async (req,res)=>{
     if(req.body.password) {
         req.body.password = CryptoJS.AES.encrypt(
             req.body.password ,
@@ -88,7 +92,7 @@ router.put("/profile/:userId", isLogin, async (req,res)=>{
 
 
 // delete
-router.delete("/:id", isLogin, async (req,res)=>{
+router.delete("/:id",  async (req,res)=>{
     try{
         await User.findByIdAndDelete(req.params.id)
         res.status(200).json("ลบตัวตนสำเร็จ")
@@ -146,5 +150,29 @@ router.get("/stats", isAdmin, async (req,res)=>{
         res.status(500).json(err);
     }
 });
+
+// ประวัติสั่งซื้อ
+router.get('/history', async (req, res) => {
+    const sortBy = req.query.sortBy || 'createdAt-desc';
+
+    let query = Order.find({ user: req.user._id }).populate('items.product');
+
+    if (sortBy === 'createdAt-asc') {
+        query = query.sort({ createdAt: 1 });
+    } else if (sortBy === 'createdAt-desc') {
+        query = query.sort({ createdAt: -1 }); 
+    }
+
+    try {
+        const orders = await query.exec();
+        res.render('user/history', { orders, sortBy, req, dayjs, layout: false });
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'เกิดข้อผิดพลาดในการดึงประวัติการสั่งซื้อ');
+        res.redirect('/');
+    }
+});
+
+
 
 module.exports = router;

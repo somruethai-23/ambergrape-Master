@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const bcrypt = require('bcryptjs');
 const User = require("../models/User");
-const passport = require('passport');
+const { createSecretToken } = require("../function/tokenGenerate");
+const passport = require('../function/passport'); 
 
 //REGISTER
 router.get("/register", (req,res) => {
@@ -10,11 +11,9 @@ router.get("/register", (req,res) => {
 
 router.post("/register", async (req,res)=> {
     const { username, email, password, confirmPassword } = req.body;
-
     const hashedPassword = bcrypt.hashSync(password, 10);
 
     try {
-        // check if username or email already exist
         const existingUser = await User.findOne({ $or: [{username}, {email}] });
 
         if (existingUser) {
@@ -22,10 +21,10 @@ router.post("/register", async (req,res)=> {
             return res.redirect('/auth/register');
         };
 
-        if (username.length < 5 && username.length < 20) {
+        if (username.length < 5 || username.length > 20) {
             req.flash('error', 'ตัวอักษรควรมีอย่างน้อย 5 ตัว และไม่ยาวเกิน 20 ตัวอักษร');
             return res.redirect('/auth/register');
-        };
+        }        
 
         if (password.length < 8) {
             req.flash('error', 'ตัวอักษรควรมีอย่างน้อย 8 ตัว');
@@ -37,14 +36,25 @@ router.post("/register", async (req,res)=> {
             return res.redirect('/auth/register');
         };
 
-        const user = new User({
+        const newUser = new User({
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
         });
-        await user.save();
-        req.flash('success', 'register successful!');
-        res.redirect('/auth/login');
+
+        const user = await newUser.save();
+        const token = createSecretToken(user._id);
+
+        res.cookie("token", token, {
+            path: "/",
+            expires: new Date(Date.now() + 86400000),
+            secure: true,
+            httpOnly: true,
+            sameSite: "None", 
+        });
+
+        req.flash('success', 'สมัครสำเร็จ!');
+        res.redirect('/');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Something went wrong!');
@@ -58,22 +68,65 @@ router.get("/login", (req,res) => {
     res.render('user/login', { req:req })
 })
 
-router.post('/login', passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/auth/login', 
-    failureFlash: true
-}), (req, res) => {
-    if (req.isAuthenticated()) {
-        res.render('index', { req: req });
-    } else {
-        req.flash('error', 'Login failed. Please try again.');
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            req.flash('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            return res.redirect('/auth/login');
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            req.flash('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            return res.redirect('/auth/login');
+        }
+
+        const token = createSecretToken(user._id);
+
+        res.cookie("token", token, {
+            path: "/",
+            expires: new Date(Date.now() + 86400000),
+            secure: true,
+            httpOnly: true,
+            sameSite: "None", 
+        });
+
+        req.flash('success', 'เข้าสู่ระบบสำเร็จ')
+        res.redirect('/');
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Something went wrong!');
         res.redirect('/auth/login');
     }
 });
+
+// GOOGLE
+// Start Google authentication
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// Google callback route
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+    const token = createSecretToken(req.user._id);
+  
+    res.cookie('token', token, {
+      path: '/',
+      expires: new Date(Date.now() + 86400000),
+      secure: true,
+      httpOnly: true,
+      sameSite: 'None',
+    });
+  
+    res.redirect('/');
+  });
     
 // logout
 router.get('/logout', (req, res) => {
-    req.session.destroy();
+    res.clearCookie('token');
+    req.flash('success', 'ลงชื่อออกสำเร็จ')
     res.redirect('/');
 });
 

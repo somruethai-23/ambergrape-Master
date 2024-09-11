@@ -2,24 +2,32 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+    font-family: "Sarabun", sans-serif;
+    color: #333;
+    line-height: 1.6;
 }
 
 html {
     position: relative;
-    min-height: 100%;
+    height: 100%;
 }
 
 body {
-    padding-top: 110px;
+    padding-top: 140px;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
     margin: 0;
+    background: url('https://marketplace.canva.com/EAFUFiGX5ek/1/0/1600w/canva-colorful-watercolor-floral-linktree-background-qRHfsd-4Nmc.jpg') no-repeat center center;
+    background-size: cover; /* เพื่อให้ภาพครอบคลุมพื้นที่ทั้งหมด */
 }
 
 main {
     flex: 1;
+}
+
+.sidebar {
+    height: 100vh;
 }
 
 section{
@@ -33,8 +41,13 @@ section{
     font-size: 20px;
 }
 .navbaricon:hover{
-    background-color: rgb(154, 154, 154);
+    background-color: rgb(175, 170, 170);
 }
+
+a:hover {
+    background-color: #a8a8a8; /* สีพื้นหลังเมื่อ hover */
+}
+
 
 /* ------------- ตั้งค่า HOVER ตรงรูปสินค้า--------------- */
 .overlay {
@@ -81,5 +94,4 @@ section{
     opacity: 0.4;
 }
   
-
 

@@ -1,18 +1,33 @@
 <div class="navbareverypage bg-white shadow fixed-top" >
 <div class="container pt-3 ">
   <div class="d-flex justify-content-between align-items-center">
-    <a class="navbar-brand" href="#"> 
-      <img src="https://scontent.furt2-1.fna.fbcdn.net/v/t39.30808-6/278083398_346217154230649_7691666938566668762_n.png?_nc_cat=102&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeHbPtNkS_GynkkV0iv-HEmoPB69xMng1tg8Hr3EyeDW2KRsjaB6e6Gpw0qI_5GHTnOFR-Ku2pYH1zDC69TjSUBk&_nc_ohc=X4-B8s67_3EAX-87ogf&_nc_oc=AQlY9_hmi-TBJpKEbRFPG7vYH_QCnTeX5LazMJtM_eFdWHeR4KBixf8OwZG_F9xFkWom654tMN4mPe0nZhNIqc6V&_nc_ht=scontent.furt2-1.fna&oh=00_AfATx2odpC5pCAa1SK3kIDdoMUBXxiuGmQyjWThns9NMfQ&oe=65F8B611">
+    <a class="navbar-brand" href="/"> 
+      <img src="/images/โลโก้วงกลม.png">
     </a>
 
 
     <div class="ms-md-5 d-flex align-items-center">
       <div class="input-group me-2">
         <input type="text" id="input-form" class="form-control" style="max-width: 200px;" placeholder="ค้นหา..." aria-label="Text input with dropdown button">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">All type</button>
         <button class="btn btn-dark d-none d-lg-block"><i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i></button>
       </div>
-      <% if (req.isAuthenticated()) { %>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('input-form');
+        const searchButton = document.querySelector('.btn-dark');
+
+        searchButton.addEventListener('click', () => {
+          const query = searchInput.value.trim();
+          if (query) {
+            window.location.href = `/search?q=${encodeURIComponent(query)}`;
+          }
+        });
+      });
+
+      </script>
+      
+      <% if (user) { %>
         <!-- Cart -->
         <a href="/cart" type="button" class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center">
             <i class="fa-solid fa-cart-shopping" style="color: #000000;"></i>
@@ -56,7 +71,7 @@
     </button>
     <div class="collapse navbar-collapse justify-content-center text-center" id="navbarSupportedContent">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-        <% if (req.isAuthenticated() && req.user.isAdmin) { %>
+        <% if (user && user.isAdmin === true) { %>
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
           </li>
@@ -65,9 +80,7 @@
               จัดการสินค้า
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="/admin/productmanagement">จัดการสินค้า</a></li>
-              <li><a class="dropdown-item" href="#">ลูกค้า</a></li>
-              <li><a class="dropdown-item" href="#">อื่นๆ</a></li> <!-- เพิ่มลิงก์ที่ต้องการต่อไป -->
+              <li><a class="dropdown-item" href="/admin/dashboard">แดชบอร์ด</a></li>  
             </ul>
           </li>
           

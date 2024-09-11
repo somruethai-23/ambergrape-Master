@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amber Grape Farm</title>
+    <!-- Bootstrap5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&family=Poppins&display=swap" rel="stylesheet">
+    <!-- Font Awesome (ICON) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <!-- TINYMCE -->
+    <script type="module" src="/js/tinymce-init.js"></script>
+</head>
+<body>
+<%- include('../partials/navbar')%>
+
+<div class="container">
+    <h1 class="text-center mt-5 mb-4">แก้ไขสินค้า</h1>
+    <form action="/product/edit-product/<%= product._id %>" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="productName" class="form-label">ชื่อสินค้า:</label>
+            <input type="text" id="productName" name="productName" class="form-control" value="<%= product.productName %>" required>
+        </div>
+
+        <div id="sizePriceContainer" class="mb-3">
+            <label for="sizes" class="form-label">ไซส์/ขนาดและราคา:</label>
+            <% product.sizes.forEach((sizePrice, index) => { %>
+                <div class="input-group mb-2">
+                    <input type="text" name="sizes[<%= index %>][size]" class="form-control" value="<%= sizePrice.size %>" required>
+                    <input type="number" name="sizes[<%= index %>][price]" class="form-control" value="<%= sizePrice.price %>" required>
+                    <button type="button" class="btn btn-outline-secondary" onclick="removeSizePriceField(this)">-</button>
+                </div>
+            <% }); %>
+            <div class="input-group mb-2">
+                <input type="text" name="sizes[<%= product.sizes.length %>][size]" class="form-control" placeholder="ไซส์/ขนาด">
+                <input type="number" name="sizes[<%= product.sizes.length %>][price]" class="form-control" placeholder="ราคา">
+                <button type="button" class="btn btn-outline-secondary" onclick="addSizePriceField()">+</button>
+            </div>
+        </div>
+        
+
+
+        <div class="mb-3">
+            <label for="stockQuantity" class="form-label">จำนวนสต็อก:</label>
+            <input type="number" id="stockQuantity" name="stockQuantity" class="form-control" value="<%= product.stockQuantity %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="status" class="form-label">สถานะ:</label>
+            <select id="status" name="status" class="form-select">
+                <option value="พร้อมขาย" <%= product.status === "พร้อมขาย" ? "selected" : "" %>>พร้อมขาย</option>
+                <option value="ไม่พร้อมขาย" <%= product.status === "ไม่พร้อมขาย" ? "selected" : "" %>>ไม่พร้อมขาย</option>
+                <option value="เลิกขาย" <%= product.status === "เลิกขาย" ? "selected" : "" %>>เลิกขาย</option>
+            </select>
+        </div>
+
+
+        <div class="mb-3">
+            <label for="categorySelect" class="form-label">เลือกหมวดหมู่:</label>
+            <select id="categorySelect" name="category" class="form-select" required>
+                <option value="<%= product.category._id %>"><%= product.category.categoryName %></option>
+                <% categories.forEach(category => { %>
+                    <% if (String(product.category._id) !== String(category._id)) { %>
+                        <option value="<%= category._id %>"><%= category.categoryName %></option>
+                    <% } %>
+                <% }); %>
+            </select>
+            
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">รายละเอียดสินค้า:</label>
+            <textarea id="description" name="description" class="form-control" required><%= product.description %></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">รูปภาพ:</label>
+            <div class="row">
+                <% product.images.forEach((imageUrl, index) => { %>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 image-item">
+                        <img src="<%= imageUrl %>" alt="Product Image" class="img-fluid img-thumbnail">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="deleteImage<%= index %>" name="deleteImages[]" value="<%= imageUrl %>">
+                            <label class="form-check-label" for="deleteImage<%= index %>">ลบ</label>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="images" class="form-label">เพิ่มรูปภาพ:</label>
+            <input type="file" id="images" name="images" class="form-control" multiple>
+        </div> 
+        
+
+        <button type="submit" class="btn btn-dark">บันทึกการเปลี่ยนแปลง</button>
+    </form>
+</div>
+
+
+</div>  
+<script>
+    let sizePriceIndex = 1;
+
+    function addSizePriceField() {
+        const container = document.getElementById('sizePriceContainer');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <input type="text" name="sizes[${sizePriceIndex}][size]" class="form-control" placeholder="ไซส์/ขนาด" required>
+            <input type="number" name="sizes[${sizePriceIndex}][price]" class="form-control" placeholder="ราคา" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="removeSizePriceField(this)">-</button>
+        `;
+        container.appendChild(div);
+        sizePriceIndex++;
+    }
+
+    function removeSizePriceField(button) {
+        button.parentElement.remove();
+    }
+</script>
+
+<%- include('../partials/footer')%>
+</body>
+</html>
