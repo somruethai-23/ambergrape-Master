@@ -36,6 +36,11 @@ router.post("/register", async (req,res)=> {
             return res.redirect('/auth/register');
         };
 
+        if (password === username) {
+            req.flash('error', 'รหัสผ่านใหม่ไม่สามารถใช้ชื่อผู้ใช้เป็นรหัสผ่านได้');
+            return res.redirect('/auth/register');
+        }
+
         const newUser = new User({
             username: req.body.username,
             email: req.body.email,

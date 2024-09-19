@@ -3,6 +3,7 @@ const {  isAdmin} = require("../function/setting");
 const User = require("../models/User");
 const Address = require("../models/Address");
 const Order = require("../models/Order");
+const bcrypt = require('bcryptjs');
 const dayjs = require('dayjs');
 require('dayjs/locale/th');
 dayjs.locale('th');
@@ -69,24 +70,81 @@ router.post("/profile-edit/:userId",  async (req, res) => {
     }
 });
 
+// change password
+router.get("/change-password/:userId", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        
+        if (!user) {
+            req.flash('error', 'กรุณาเข้าสู่ระบบก่อน');
+            return res.redirect('/user/login');
+        }
 
+        res.render('user/changepassword', { user });
+    } catch (err) {
+        console.error('Error fetching user:', err);
+        req.flash('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
+        res.redirect('/user/login');
+    }
+});
 
-// update username
-router.put("/profile/:userId",  async (req,res)=>{
-    if(req.body.password) {
-        req.body.password = CryptoJS.AES.encrypt(
-            req.body.password ,
-            process.env.SEC_KEY
-        ).toString();
+router.post("/change-password/:userId", async (req, res) => {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+        req.flash('error', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+        return res.redirect(`/user/change-password/${req.params.userId}`);
     }
 
-    try{
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, {
-            $set: req.body
-        },{new: true});
-        res.status(200).json(updatedUser);
-    } catch(err) {
-        res.status(500).json(err);
+    if (newPassword.length < 8) {
+        req.flash('error', 'ตัวอักษรควรมีอย่างน้อย 8 ตัว');
+        return res.redirect(`/user/change-password/${req.params.userId}`);
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        req.flash('error', 'รหัสผ่านใหม่ไม่ตรงกัน');
+        return res.redirect(`/user/change-password/${req.params.userId}`);
+    }
+
+    try {
+        const user = await User.findById(req.params.userId);
+
+        if (!user) {
+            req.flash('error', 'ไม่พบผู้ใช้');
+            return res.redirect(`/user/change-password/${req.params.userId}`);
+        }
+
+        // ตรวจสอบรหัสผ่านเก่า
+        const isOldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isOldPasswordMatch) {
+            req.flash('error', 'รหัสผ่านเก่าไม่ถูกต้อง');
+            return res.redirect(`/user/change-password/${req.params.userId}`);
+        }
+
+        // ตรวจสอบว่ารหัสผ่านใหม่ไม่ซ้ำกับชื่อผู้ใช้
+        if (newPassword === user.username) {
+            req.flash('error', 'รหัสผ่านใหม่ไม่สามารถใช้ชื่อผู้ใช้เป็นรหัสผ่านได้');
+            return res.redirect(`/user/change-password/${req.params.userId}`);
+        }
+
+        // ตรวจสอบว่ารหัสผ่านใหม่ไม่ซ้ำกับรหัสผ่านเก่า
+        const isNewPasswordSameAsOld = await bcrypt.compare(newPassword, user.password);
+        if (isNewPasswordSameAsOld) {
+            req.flash('error', 'รหัสผ่านใหม่ซ้ำกับรหัสผ่านเก่า');
+            return res.redirect(`/user/change-password/${req.params.userId}`);
+        }
+
+        // เข้ารหัสรหัสผ่านใหม่
+        const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+        user.password = hashedNewPassword;
+        await user.save();
+
+        req.flash('success', 'เปลี่ยนรหัสผ่านสำเร็จ');
+        res.redirect(`/user/profile/${req.params.userId}`);
+    } catch (err) {
+        req.flash('error', 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+        console.error(err);
+        res.redirect(`/user/change-password/${req.params.userId}`);
     }
 });
 

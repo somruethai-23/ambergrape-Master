@@ -121,6 +121,14 @@
     document.getElementById('productPrice').innerText = price;
   }
 
+  // Function to change the main image
+  function changeMainImage(imageUrl) {
+    // Update the src of the main image
+    document.getElementById('mainImageSrc').src = imageUrl;
+    // Update the href of the link for the main image
+    document.getElementById('mainImageLink').href = imageUrl;
+  }
+
   document.getElementById('button-minus').addEventListener('click', function() {
     let quantity = parseInt(document.getElementById('productQuantity').value);
     if (quantity > 1) {

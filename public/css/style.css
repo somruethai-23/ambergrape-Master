@@ -18,8 +18,6 @@ body {
     flex-direction: column;
     height: 100vh;
     margin: 0;
-    background: url('https://marketplace.canva.com/EAFUFiGX5ek/1/0/1600w/canva-colorful-watercolor-floral-linktree-background-qRHfsd-4Nmc.jpg') no-repeat center center;
-    background-size: cover; /* เพื่อให้ภาพครอบคลุมพื้นที่ทั้งหมด */
 }
 
 main {

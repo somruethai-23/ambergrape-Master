@@ -5,9 +5,10 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const Address = require('../models/Address');
 const { registerVersion } = require('firebase/app');
+const { isLogin } = require('../function/setting');
 
 // เพิ่มสินค้าเข้าตะกร้า
-router.post('/add-to-cart/:id',  async (req, res) => {
+router.post('/add-to-cart/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const { quantity, size } = req.body;
     const product = await Product.findById(productId);
@@ -71,7 +72,7 @@ router.post('/add-to-cart/:id',  async (req, res) => {
 });
 
 // หน้าสินค้าในตะกร้าก่อน checkout 
-router.get('/',  async (req, res) => {
+router.get('/', isLogin, async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user._id })
         .populate({
@@ -141,7 +142,7 @@ router.get('/',  async (req, res) => {
 
 
 // เพิ่มจำนวนสินค้า
-router.post('/plus/:id',  async (req, res) => {
+router.post('/plus/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size;
 
@@ -172,7 +173,7 @@ router.post('/plus/:id',  async (req, res) => {
 });
 
 // ลดจำนวนสินค้า
-router.post('/minus/:id',  async (req, res) => {
+router.post('/minus/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size;
 
@@ -206,7 +207,7 @@ router.post('/minus/:id',  async (req, res) => {
 });
 
 // POST route to remove item from cart
-router.post('/remove-from-cart/:id',  async (req, res) => {
+router.post('/remove-from-cart/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size; // รับค่า size จาก query string
 
@@ -251,7 +252,7 @@ router.post('/remove-from-cart/:id',  async (req, res) => {
 
 
 // เคลียร์ตะกร้า
-router.delete("/",  (req, res) => {
+router.delete("/", isLogin, (req, res) => {
     try {
         req.session.cart = null;
         req.flash('success', 'ลบสินค้าในตะกร้าสำเร็จ');

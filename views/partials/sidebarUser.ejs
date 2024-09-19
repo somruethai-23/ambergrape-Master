@@ -8,6 +8,9 @@
             <p class="mt-3" style="font-size: 1rem; color: #333;">ยินดีต้อนรับ, คุณ <%= user.username %></p>
             
             <a href="/user/profile/<%= user._id %>" class="btn btn-outline-dark btn-sm mt-3" style="width: 100%;">รายละเอียดส่วนตัว</a>
+            <% if (!user.googleId) { %>
+            <a href="/user/change-password/<%= user._id %>" class="btn btn-outline-dark btn-sm mt-2" style="width: 100%;">เปลี่ยนรหัสผ่าน</a>        
+            <% } %>
             <a href="/user/history" class="btn btn-outline-dark btn-sm mt-2" style="width: 100%;">ดูประวัติการสั่งซื้อ</a>
         </div>
     </div>

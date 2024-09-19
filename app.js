@@ -18,6 +18,7 @@ const { decodeToken } = require('./function/tokenGenerate');
 const Product = require('./models/Product');
 const User = require('./models/User');
 const Order = require('./models/Order');
+const Category = require('./models/Category');
 
 const mongoDB = process.env.MONGO_URL;
 
@@ -113,36 +114,56 @@ app.use('/cart', cartRoutes);
 app.use('/order', orderRoutes);
 app.use('/categories', categoriesRoutes);
 
-app.get('/', async(req, res) => {
-
-    try {
-      const products = await Product.find().populate('category');
-
-        res.render('index', { products: products ,layout: false, req:req });
-    } catch (error) {
-        console.log('การดึงข้อมูลผิดพลาด', error);
-        res.status(500).send('Internal Server Error');
-    }
+app.get('/', async (req, res) => {
+  const products = await Product.find().populate('category');
+  const categories = await Category.find();
+  res.render('index', {categories, products, layout: false})
 });
 
-// Add this route to your Express app
-app.get('/search', async (req, res) => {
-  const searchTerm = req.query.q || '';
+app.get('/products', async (req, res) => {
   try {
-      // Use regex for case-insensitive search
-      const products = await Product.find({
-          $or: [
-              { productName: { $regex: searchTerm, $options: 'i' } },
-              { description: { $regex: searchTerm, $options: 'i' } }
-          ]
-      }).populate('category');
-      
-      res.render('searchResults', { products: products, searchTerm: searchTerm, req:req });
-  } catch (error) {
-      console.log('Error searching for products:', error);
-      res.status(500).send('Internal Server Error');
+    const { searchTerm = '', categories = 'all', sortOption = '' } = req.query;
+
+    // Build query object
+    let query = {};
+    if (searchTerm) {
+      query.productName = new RegExp(searchTerm, 'i');
+    }
+    if (categories !== 'all') {
+      // Split categories and ensure all selected categories are included
+      query.category = { $in: categories.split(',') };
+    }
+
+    // Sorting
+    let sort = {};
+    switch (sortOption) {
+      case 'newest':
+        sort.createdAt = -1;
+        break;
+      case 'oldest':
+        sort.createdAt = 1;
+        break;
+      case 'priceLowToHigh':
+        sort['sizes.price'] = 1;
+        break;
+      case 'priceHighToLow':
+        sort['sizes.price'] = -1;
+        break;
+      case 'alphabetical':
+        sort.productName = 1;
+        break;
+      default:
+        break;
+    }
+
+    // Find products
+    const products = await Product.find(query).sort(sort).populate('category');
+    res.json(products);
+  } catch (err) {
+    res.status(500).send(err.message);
   }
 });
+
 
 app.listen(process.env.PORT, () => {
     console.log(`Server working at ${process.env.PORT}`);

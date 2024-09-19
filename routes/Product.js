@@ -20,7 +20,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // --------------------------------------- Product MANAGE Page ----------------------------------------------
 router.get('/productmanagement',  isAdmin, async (req,res)=>{
         const products = await Product.find().populate('category');
-    res.render('admin/productManagement', {req:req, products: products});
+    res.render('admin/manage-product', {req:req, products: products});
 });
 
 // --------------------------------------- ADD product page ----------------------------------------------
@@ -69,11 +69,11 @@ router.post('/add-product', upload.array("images"), async (req, res) => {
         );
 
         req.flash('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
+        res.redirect('/admin/manage-product');
     } catch (error) {
         console.error(error);
         req.flash('error', 'เกิดข้อผิดพลาดในการ เพิ่มสินค้า');
-        res.redirect('/admin/productManagement');
+        res.redirect('/admin/manage-product');
     }
 });
 
@@ -142,7 +142,6 @@ router.post('/edit-product/:productId', upload.array("images"),  isAdmin, async 
         const { productName, description, stockQuantity, status, sizes, category } = req.body;
         const deleteImages = req.body.deleteImages || [];
 
-        console.log(req.body);
 
         // ตรวจสอบว่า sizes เป็นอาเรย์หรือไม่
         if (!Array.isArray(sizes)) {
@@ -153,7 +152,6 @@ router.post('/edit-product/:productId', upload.array("images"),  isAdmin, async 
         // กรองข้อมูลไซส์และราคาที่ไม่ว่างเปล่า
         const filteredSizes = sizes.filter(sizeObj => sizeObj.size.trim() !== '' && sizeObj.price.trim() !== '');
 
-        console.log(filteredSizes);
         // Parse sizes after filtering
         const parsedSizes = filteredSizes.map(sizeObj => ({
             size: sizeObj.size.trim(),
@@ -197,11 +195,11 @@ router.post('/edit-product/:productId', upload.array("images"),  isAdmin, async 
         await product.save();
 
         req.flash('success', 'อัพเดตสินค้าเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
+        res.redirect('/admin/manage-product');
     } catch (error) {
         req.flash('error', 'มีปัญหาการอัพเดทสินค้า');
         console.error(error);
-        res.redirect('/admin/productManagement');
+        res.redirect('/admin/manage-product');
     }
 });
 
@@ -211,7 +209,7 @@ router.post('/delete-all-products',  isAdmin, async (req, res) => {
     try {
         await Product.deleteMany({});
         req.flash('success', 'ลบสินค้าทั้งหมดเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
+        res.redirect('/admin/manage-product');
     } catch (error) {
         console.error(error);
         res.status(500).send('Error deleting all products');
@@ -224,7 +222,7 @@ router.post('/delete-product/:productId',  isAdmin, async (req, res) => {
         const productId = req.params.productId;
         await Product.findByIdAndDelete(productId);
         req.flash('success', 'ลบสินค้าเรียบร้อยแล้ว');
-        res.redirect('/admin/productManagement');
+        res.redirect('/admin/manage-product');
     } catch (error) {
         console.error(error);
         res.status(500).send('Error deleting product');
