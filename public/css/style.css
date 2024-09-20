@@ -16,12 +16,14 @@ body {
     padding-top: 140px;
     display: flex;
     flex-direction: column;
-    height: 100vh;
     margin: 0;
 }
 
 main {
     flex: 1;
+    display: flex; /* ให้ main ใช้ flex */
+    flex-direction: column; /* จัดเรียงในแนวตั้ง */
+    justify-content: center; /* จัดให้อยู่กลางในแนวตั้ง */
 }
 
 .sidebar {
@@ -42,8 +44,29 @@ section{
     background-color: rgb(175, 170, 170);
 }
 
+a {
+    text-decoration: none; /* ลบขีดเส้นใต้เริ่มต้น */
+    position: relative;
+}
+
 a:hover {
-    background-color: #a8a8a8; /* สีพื้นหลังเมื่อ hover */
+    text-decoration: underline; /* ขีดเส้นใต้เมื่อ hover */
+    text-decoration-thickness: 2px; /* ความหนาของเส้น */
+    text-underline-offset: 3px; /* ระยะห่างระหว่างข้อความกับเส้นใต้ */
+    text-decoration-color: #a8a8a8; /* สีของเส้นใต้ */
+}
+
+.banner {
+    background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20231231/pngtree-natural-backdrop-green-grape-branch-on-wooden-wall-with-white-timber-image_13861871.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 600px !important; /* หรือปรับตามต้องการ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
 }
 
 
