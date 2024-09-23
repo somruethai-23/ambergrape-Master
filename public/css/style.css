@@ -3,7 +3,7 @@
     padding: 0;
     box-sizing: border-box;
     font-family: "Sarabun", sans-serif;
-    color: #333;
+    color: #262323;
     line-height: 1.6;
 }
 
@@ -17,6 +17,9 @@ body {
     display: flex;
     flex-direction: column;
     margin: 0;
+    background-image: url('https://www.shutterstock.com/image-photo/macro-grey-paper-background-texture-600nw-2478795259.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 main {
@@ -57,11 +60,11 @@ a:hover {
 }
 
 .banner {
-    background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20231231/pngtree-natural-backdrop-green-grape-branch-on-wooden-wall-with-white-timber-image_13861871.png');
+    background-image: url('/images/background.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: 600px !important; /* หรือปรับตามต้องการ */
+    height: 400px !important; /* หรือปรับตามต้องการ */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,6 +81,9 @@ a:hover {
     width: 100%;
     height: 100%;
     opacity: 0;
+    display: flex; /* ใช้ flexbox เพื่อให้จัดตำแหน่งกลางได้ง่าย */
+    justify-content: center; /* จัดให้อยู่กลางในแนวนอน */
+    align-items: center; /* จัดให้อยู่กลางในแนวตั้ง */
     transition: opacity 0.3s ease;
 }
 
@@ -88,23 +94,15 @@ a:hover {
 
 .overlay-text {
     font-size: 20px;
-    text-align: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     padding: 10px;
     border-radius: 5px;
+    color: white;
 }
 
 .position-relative {
     overflow: hidden;
     position: relative;
     height: 250px;
-}
-
-.position-relative {
-    position: relative;
 }
 
 .position-relative img {
@@ -114,5 +112,20 @@ a:hover {
 .position-relative:hover img {
     opacity: 0.4;
 }
-  
 
+/* หน้าIndex checkbox */
+.form-check-input:checked {
+    background-color: #007bff; /* สีพื้นหลังเมื่อถูกเลือก */
+    border-color: #007bff; /* สีของขอบ checkbox */
+}
+
+/* เปลี่ยนสีเมื่อ hover */
+.form-check-input:hover {
+    background-color: #5a9bf6; /* สีเมื่อ hover */
+    border-color: #5a9bf6; /* สีของขอบ checkbox เมื่อ hover */
+}
+
+/* เปลี่ยนสี label เมื่อ checkbox ถูกเลือก */
+.form-check-input:checked + .form-check-label {
+    color: #007bff; /* สีของ label เมื่อ checkbox ถูกเลือก */
+}
