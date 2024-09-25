@@ -1,4 +1,5 @@
 const Order = require('../models/Order');
+const User = require('../models/User');
 
 // Function to calculate monthly earnings
 async function calculateMonthlyEarnings() {
@@ -167,10 +168,73 @@ function calculateMembershipAge(createdAt) {
     return `${years} ปี ${months} เดือน ${days} วัน`;
 }
 
+async function newUserPerMonth() {
+    // เตรียม array ขนาด 12 สำหรับแต่ละเดือน (ม.ค. ถึง ธ.ค.)
+    const newUsersCountByMonth = Array(12).fill(0);
+
+    // ดึงข้อมูลสมาชิกใหม่โดยใช้ aggregation pipeline
+    const newUsers = await User.aggregate([
+        {
+            $group: {
+                _id: {
+                    year: { $year: "$createdAt" },
+                    month: { $month: "$createdAt" }
+                },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { "_id.year": 1, "_id.month": 1 }
+        }
+    ]);
+
+    // วน loop ผลลัพธ์เพื่อใส่ข้อมูลลงใน array ของแต่ละเดือน
+    newUsers.forEach(user => {
+        const monthIndex = user._id.month - 1; // -1 เพราะ array index เริ่มที่ 0
+        newUsersCountByMonth[monthIndex] = user.count;
+    });
+
+    return newUsersCountByMonth; // ส่งกลับ array ขนาด 12
+}
+
+
+async function countNewAndReturningCustomers() {
+    const customers = await User.aggregate([
+        {
+            $lookup: {
+                from: 'orders', // ค้นหา collection 'orders'
+                localField: '_id', 
+                foreignField: 'user', 
+                as: 'orderHistory' 
+            }
+        },
+        {
+            $addFields: {
+                orderCount: { $size: "$orderHistory" } // คำนวณจำนวน order ต่อผู้ใช้แต่ละคน
+            }
+        }
+    ]);
+
+    let newCustomers = 0;
+    let returningCustomers = 0;
+
+    customers.forEach(customer => {
+        if (customer.orderCount <= 1) {
+            newCustomers++;
+        } else {
+            returningCustomers++;
+        }
+    });
+
+    return { newCustomers, returningCustomers };
+}
+
 module.exports = {
     calculateMonthlyEarnings,
     calculateAnnualEarnings,
     getMonthlyEarnings,
     bestSellingAll,
-    calculateMembershipAge
+    calculateMembershipAge,
+    newUserPerMonth,
+    countNewAndReturningCustomers
 };

@@ -4,7 +4,7 @@ const Order = require("../models/Order");
 const Category = require("../models/Category");
 const User = require('../models/User');
 const { isAdmin } = require("../function/setting");
-const { calculateMonthlyEarnings, calculateAnnualEarnings, getMonthlyEarnings, bestSellingAll, calculateMembershipAge } = require("../function/calculate");
+const { calculateMonthlyEarnings, calculateAnnualEarnings, getMonthlyEarnings, bestSellingAll, calculateMembershipAge, newUserPerMonth, countNewAndReturningCustomers } = require("../function/calculate");
 const dayjs = require('dayjs');
 const duration = require('dayjs/plugin/duration');
 dayjs.extend(duration);
@@ -51,7 +51,7 @@ router.get('/manage-product', isAdmin, async (req, res) => {
 
 
 
-// -------------- Customer --------------------
+// -------------- Order --------------------
 router.get('/manage-order', isAdmin, async (req,res)=> {
     const orders = await Order.find().populate({
         path: 'items.product', // ดึงข้อมูลสินค้าใน items.product
@@ -108,8 +108,15 @@ router.post('/cancel-order/:id', async (req, res) => {
     }
 });
 
-
+// ---------------- Customer ------------------
 router.get('/manage-customer', isAdmin, async (req, res) => {
+    const newUser = await newUserPerMonth();
+    const { newCustomers, returningCustomers } = await countNewAndReturningCustomers();
+
+    const totalCustomers = newCustomers + returningCustomers;
+    const returningPercentage = (returningCustomers / totalCustomers) * 100;
+    const newPercentage = (newCustomers / totalCustomers) * 100;
+
     try {
         const { search = '', sort = 'createdAt', order = 'asc' } = req.query;
 
@@ -168,7 +175,10 @@ router.get('/manage-customer', isAdmin, async (req, res) => {
             sort, 
             order,
             adminCount,
-            customerCount
+            customerCount,
+            newUser,
+            newPercentage,
+            returningPercentage
         });
     } catch (error) {
         console.error('Error fetching user data:', error);

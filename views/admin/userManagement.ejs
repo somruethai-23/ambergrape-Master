@@ -17,35 +17,109 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <!-- Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <%- include('../partials/navbar') %>
     <div class="d-flex">
         <%- include('../partials/sidebar') %>
-        <div class="container mt-5">
+        <div class="container mt-5 mb-5" style="padding-bottom: 80px;">
             <h1 class="text-center mb-4">จัดการลูกค้า</h1>
             
-            <div class="row d-flex justify-content-center mb-4">
-                <!-- Admin Card -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card border-primary shadow-sm">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">จำนวนแอดมิน</h5>
-                            <p class="card-text fs-3"><%= adminCount %> คน</p>
+            <!-- Graphs Section -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">สมาชิกใหม่ต่อเดือน</h5>
+                            <canvas id="newuserpermonth"></canvas>
+                            <script>
+                                const linectx = document.getElementById('newuserpermonth').getContext('2d');
+                                const newUser = <%= JSON.stringify(newUser) %>;
+    
+                                new Chart(linectx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."],
+                                        datasets: [{
+                                            label: "สมาชิกใหม่",
+                                            lineTension: 0.3,
+                                            backgroundColor: "rgba(78, 115, 223, 0.05)",
+                                            borderColor: "rgba(78, 115, 223, 1)",
+                                            pointRadius: 3,
+                                            pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                                            pointBorderColor: "rgba(78, 115, 223, 1)",
+                                            pointHoverRadius: 3,
+                                            pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                                            pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                                            pointHitRadius: 10,
+                                            pointBorderWidth: 2,
+                                            data: newUser,
+                                        }],
+                                    },
+                                    options: {
+                                        scales: {
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'เดือน',
+                                                },
+                                            },
+                                            y: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'คน',
+                                                },
+                                            },
+                                        },
+                                    },
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>
-                <!-- Customer Card -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card border-success shadow-sm">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">จำนวนลูกค้า</h5>
-                            <p class="card-text fs-3"><%= customerCount %> คน</p>
+    
+                <div class="col-md-4">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">ประเภทลูกค้า</h5>
+                            <canvas id="returningCustomersChart"></canvas>
+                            <script>
+                                const newCustomerPercentage = <%= newPercentage %>;
+                                const returningCustomerPercentage = <%= returningPercentage %>;
+    
+                                new Chart(document.getElementById('returningCustomersChart').getContext('2d'), {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: ['ลูกค้ากลับมาซื้อ', 'ลูกค้าใหม่'],
+                                        datasets: [{
+                                            label: 'ประเภทลูกค้า',
+                                            data: [returningCustomerPercentage, newCustomerPercentage],
+                                            backgroundColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                                            hoverOffset: 4
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'top',
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: 'ประเภทลูกค้า: ลูกค้าใหม่ vs ลูกค้ากลับมาซื้อซ้ำ'
+                                            }
+                                        }
+                                    }
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>
             </div>
-
+    
+            <!-- Search and Sorting Section -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="input-group">
@@ -71,8 +145,8 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- แสดงข้อมูลลูกค้า -->
+    
+            <!-- Customer Table Section -->
             <table class="table table-bordered table-striped mt-4">
                 <thead>
                     <tr>
