@@ -126,3 +126,8 @@ a:hover {
     color: #007bff; /* สีของ label เมื่อ checkbox ถูกเลือก */
 }
 
+.carousel-inner img {
+    width: 100%; /* Ensure the images cover the full width of the carousel */
+    height: 100vh; /* Set the height to match the viewport height */
+    object-fit: cover; /* Ensure images maintain their aspect ratio and cover the entire area */
+}

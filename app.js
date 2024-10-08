@@ -10,6 +10,9 @@ const flash = require('connect-flash');
 const bodyParser = require('body-parser');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
+const nodemailer = require("nodemailer");
+const { google } = require('googleapis');
+const OAuth2 = google.auth.OAuth2;
 const jwt = require('jsonwebtoken');
 const { decodeToken } = require('./function/tokenGenerate');
 
@@ -164,6 +167,68 @@ app.get('/products', async (req, res) => {
   }
 });
 
+app.get('/aboutus', (req, res) => {
+  res.render('aboutus');
+});
+
+app.get('/contactus', (req, res) => {
+  res.render('contactus');
+});
+
+app.post('/send-email', (req, res) => {
+  const { name, email, message } = req.body;
+
+  const oauth2Client = new OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SEC,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN
+  });
+
+  async function sendEmail() {
+    try {
+
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: 'ambergrape2020@gmail.com',
+          clientId: process.env.CLIENT_ID,
+          clientSecret: process.env.CLIENT_SEC,
+          refreshToken: process.env.Google_RefToken,
+          accessToken: process.env.Google_AccToken,
+        },
+      });
+
+      let mailOptions = {
+        from: email,
+        to: 'ambergrape2020@gmail.com',
+        subject: `จาก ${name}`,
+        text: `ข้อความจาก ${name} กล่าวว่า: ${message}`,
+      };
+
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          req.flash('error', 'ส่งข้อความไม่ผ่าน');
+          console.log(err);
+          res.redirect('/contactus');
+        } else {
+          req.flash('success', 'ได้รับอีเมลเรียบร้อยค่ะ');
+          res.redirect('/contactus');
+        }
+      });
+    } catch (error) {
+      console.error('Error during sending email: ', error);
+      req.flash('error', 'เกิดข้อผิดพลาดกับการส่งอีเมล');
+      res.redirect('/contactus');
+    }
+  }
+
+  sendEmail();
+});
 
 app.listen(process.env.PORT, () => {
     console.log(`Server working at ${process.env.PORT}`);
