@@ -2,6 +2,7 @@ const router = require("express").Router();
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 const {  isAdmin } = require("../function/setting");
+const { getRandomProducts } = require('../function/calculate');
 
 // firebase Storage
 const { Storage } = require('@google-cloud/storage');
@@ -233,6 +234,8 @@ router.post('/delete-product/:productId',  isAdmin, async (req, res) => {
 router.get('/:productId', async (req, res) => {
     try {
         const product = await Product.findById(req.params.productId).populate('category');
+        const recommendedProducts = await getRandomProducts();
+
         if (!product) {
             return res.status(404).send("Product not found");
         }
@@ -240,7 +243,7 @@ router.get('/:productId', async (req, res) => {
         if (!category) {
             return res.status(404).send("Category not found");
         }
-        res.render('singleProduct', { req:req ,product: product, categoryName: category.categoryName, layout: false });
+        res.render('singleProduct', { req:req ,product: product, categoryName: category.categoryName, recommendedProducts, layout: false });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");

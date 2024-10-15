@@ -126,8 +126,17 @@ a:hover {
     color: #007bff; /* สีของ label เมื่อ checkbox ถูกเลือก */
 }
 
-.carousel-inner img {
-    width: 100%; /* Ensure the images cover the full width of the carousel */
-    height: 100vh; /* Set the height to match the viewport height */
-    object-fit: cover; /* Ensure images maintain their aspect ratio and cover the entire area */
+.carousel-item {
+    height: 600px; /* ปรับความสูงตามที่ต้องการ */
+}
+
+.carousel-item img {
+    width: 100%;
+    height: 100%; /* ให้สูงของภาพเป็น 100% ของ carousel-item */
+    object-fit: cover; /* ตัดภาพให้พอดีกับขนาด โดยไม่บิดเบือนสัดส่วน */
+    transition: opacity 0.5s ease; /* เพิ่ม transition สำหรับการเปลี่ยนแปลง opacity */
+}
+
+.carousel-item.active {
+    opacity: 1; /* ทำให้ carousel-item ที่ active ปรากฏ */
 }
