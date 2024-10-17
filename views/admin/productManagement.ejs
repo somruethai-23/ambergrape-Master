@@ -22,7 +22,7 @@
             <a href="/categories" class="btn btn-dark">เพิ่มหมวดหมู่</a>
             <a href="/product/add-product" class="btn btn-dark">เพิ่มสินค้า</a>
             <form action="/product/delete-all-products" method="POST" class="mb-0">
-              <button type="submit" class="btn btn-outline-danger">ลบสินค้าทั้งหมด</button>
+              <button type="submit" class="btn btn-outline-danger" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้าทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้')">ลบสินค้าทั้งหมด</button>
             </form>
           </div>
         </div>
