@@ -1,23 +1,28 @@
 <div class="container mt-4">
-    <h1>ผลการค้นหา</h1>
-    <p>ผลลัพธ์สำหรับ: <strong><%= searchTerm %></strong></p>
+  <h1 class="text-center">ผลการค้นหา</h1>
+  <p class="text-center">ผลลัพธ์สำหรับ: <strong><%= searchTerm %></strong></p>
 
-    <% if (products.length > 0) { %>
-      <div class="row">
-        <% products.forEach(product => { %>
-          <div class="col-md-4 mb-4">
-            <div class="card">
-              <img src="<%= product.images %>" class="card-img-top" alt="<%= product.productName %>">
-              <div class="card-body">
-                <h5 class="card-title"><%= product.productName %></h5>
-                <p class="card-text"><%- product.description %></p>
-                <a href="/product/<%= product._id %>" class="btn btn-primary">ดูรายละเอียด</a>
-              </div>
+  <% if (products.length > 0) { %>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <% products.forEach(product => { %>
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <img src="<%= product.images[0] %>" class="card-img-top" alt="<%= product.productName %>" style="object-fit: cover; height: 200px;">
+            <div class="card-body">
+              <h5 class="card-title"><%= product.productName %></h5>
+              <p class="card-text text-truncate"><%- product.description %></p>
+              <a href="/product/<%= product._id %>" class="btn btn-warning">ดูรายละเอียด</a>
+            </div>
+            <div class="card-footer text-muted">
+              <small>ราคา: <strong> <%= product.sizes[0].price.toLocaleString() %> บาท</strong></small>
             </div>
           </div>
-        <% }); %>
-      </div>
-    <% } else { %>
-      <p>ไม่พบสินค้าที่ตรงกับการค้นหา</p>
-    <% } %>
-  </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="alert alert-warning text-center">
+      <p><i class="fa-solid fa-xmark" style="color: #ff0000;"></i> ไม่พบสินค้าที่ตรงกับการค้นหา</p>
+    </div>
+  <% } %>
+</div>

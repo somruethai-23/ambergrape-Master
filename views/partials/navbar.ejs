@@ -5,14 +5,25 @@
       <img src="/images/โลโก้วงกลม.png">
     </a>
 
-    <form action="/search" method="GET" class="ms-md-5 d-flex align-items-center">
+
+    <div class="ms-md-5 d-flex align-items-center">
       <div class="input-group me-2">
-        <input type="text" id="input-form" name="q" class="form-control" style="max-width: 200px;" placeholder="ค้นหา..." aria-label="Text input with dropdown button">
-        <button type="submit" class="btn btn-dark d-none d-lg-block">
-          <i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i>
-        </button>
+        <input type="text" id="input-form" class="form-control" style="max-width: 200px;" placeholder="ค้นหา..." aria-label="Text input with dropdown button">
+        <button class="btn btn-dark d-none d-lg-block"><i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i></button>
       </div>
-    </form>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('input-form');
+        const searchButton = document.querySelector('.btn-dark');
+
+        searchButton.addEventListener('click', () => {
+          const query = searchInput.value.trim();
+          if (query) {
+            window.location.href = `/search?q=${encodeURIComponent(query)}`;
+          }
+        });
+      });
 
       </script>
       

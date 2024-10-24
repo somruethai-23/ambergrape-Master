@@ -124,21 +124,19 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/search', (req, res) => {
-  const searchTerm = req.query.q; // รับคำค้นหาจาก query string
+  const searchTerm = req.query.q;
 
   if (searchTerm) {
-    // ค้นหาข้อมูลสินค้าในฐานข้อมูลโดยใช้คำค้นหา
     Product.find({ productName: { $regex: searchTerm, $options: 'i' } })
       .then(products => {
-        // ส่งข้อมูลสินค้าและคำค้นหาไปยังหน้าแสดงผล
-        res.render('searcResults', { products, searchTerm });
+        res.render('searchResults', { products, searchTerm });
       })
       .catch(err => {
         console.error(err);
         res.status(500).render('error', { message: 'เกิดข้อผิดพลาดในการค้นหา' });
       });
   } else {
-    res.redirect('/'); // ถ้าไม่มีคำค้นหาให้พากลับไปหน้าแรก
+    res.redirect('/');
   }
 });
 
