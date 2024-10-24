@@ -123,6 +123,25 @@ app.get('/', async (req, res) => {
   res.render('index', {categories, products, layout: false})
 });
 
+app.get('/search', (req, res) => {
+  const searchTerm = req.query.q; // รับคำค้นหาจาก query string
+
+  if (searchTerm) {
+    // ค้นหาข้อมูลสินค้าในฐานข้อมูลโดยใช้คำค้นหา
+    Product.find({ productName: { $regex: searchTerm, $options: 'i' } })
+      .then(products => {
+        // ส่งข้อมูลสินค้าและคำค้นหาไปยังหน้าแสดงผล
+        res.render('searcResults', { products, searchTerm });
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).render('error', { message: 'เกิดข้อผิดพลาดในการค้นหา' });
+      });
+  } else {
+    res.redirect('/'); // ถ้าไม่มีคำค้นหาให้พากลับไปหน้าแรก
+  }
+});
+
 app.get('/products', async (req, res) => {
   try {
     const { searchTerm = '', categories = 'all', sortOption = '' } = req.query;
@@ -235,5 +254,5 @@ app.listen(process.env.PORT, '0.0.0.0',  () => {
 });
 
 app.use((req, res, next) => {
-  res.status(404).render('error');  // ไม่ต้องใช้เส้นทางแบบเต็ม
+  res.status(404).render('error'); 
 });
