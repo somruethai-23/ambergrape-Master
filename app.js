@@ -247,7 +247,7 @@ app.post('/send-email', (req, res) => {
   sendEmail();
 });
 
-app.listen(process.env.PORT, '0.0.0.0',  () => {
+app.listen(process.env.PORT || 10000 ,  () => {
     console.log(`Server working at ${process.env.PORT}`);
 });
 
