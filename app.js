@@ -192,63 +192,6 @@ app.get('/contactus', (req, res) => {
   res.render('contactus');
 });
 
-app.post('/send-email', (req, res) => {
-  const { name, email, message } = req.body;
-
-  const oauth2Client = new OAuth2(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SEC,
-    'https://developers.google.com/oauthplayground'
-  );
-
-  oauth2Client.setCredentials({
-    refresh_token: process.env.Google_RefToken,
-  });
-
-  async function sendEmail() {
-    try {
-
-      const { token } = await oauth2Client.getAccessToken();
-
-      let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          type: 'OAuth2',
-          user: 'ambergrape2020@gmail.com',
-          clientId: process.env.CLIENT_ID,
-          clientSecret: process.env.CLIENT_SEC,
-          refreshToken: process.env.Google_RefToken,
-          accessToken: token,
-        },
-      });
-
-      let mailOptions = {
-        from: email,
-        to: 'ambergrape2020@gmail.com',
-        subject: `จาก ${name}`,
-        text: `ข้อความจาก ${name} กล่าวว่า: ${message}`,
-      };
-
-      transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          req.flash('error', 'ส่งข้อความไม่ผ่าน');
-          console.log(err);
-          res.redirect('/contactus');
-        } else {
-          req.flash('success', 'ได้รับอีเมลเรียบร้อยค่ะ');
-          res.redirect('/contactus');
-        }
-      });
-    } catch (error) {
-      console.error('Error during sending email: ', error);
-      req.flash('error', 'เกิดข้อผิดพลาดกับการส่งอีเมล');
-      res.redirect('/contactus');
-    }
-  }
-
-  sendEmail();
-});
-
 app.listen(process.env.PORT || 10000 ,  () => {
     console.log(`Server working at ${process.env.PORT}`);
 });
