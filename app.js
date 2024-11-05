@@ -11,8 +11,6 @@ const bodyParser = require('body-parser');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
 const nodemailer = require("nodemailer");
-const { google } = require('googleapis');
-const OAuth2 = google.auth.OAuth2;
 const jwt = require('jsonwebtoken');
 const { decodeToken } = require('./function/tokenGenerate');
 
