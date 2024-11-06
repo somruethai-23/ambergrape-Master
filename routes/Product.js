@@ -11,7 +11,7 @@ const { connectStorageEmulator } = require("firebase/storage");
 
 const storage = new Storage({
     projectId: process.env.project_ID,
-    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-4ae9158a1f.json'),
+    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-7e57e1001b.json'),
 });
 
 const bucket = storage.bucket(process.env.storage_BUCKET);
@@ -24,29 +24,32 @@ router.get('/productmanagement',  isAdmin, async (req,res)=>{
 });
 
 // --------------------------------------- ADD product page ----------------------------------------------
-router.get('/add-product',  isAdmin, async (req, res) => {
+// --------------------------------------- ADD product page ----------------------------------------------
+router.get('/add-product', isAdmin, async (req, res) => {
     const products = await Product.find();
     const categories = await Category.find();
-    res.render('product/productAdd', {req:req, products: products, categories: categories, layout: false});
+    res.render('product/productAdd', { req: req, products: products, categories: categories, layout: false });
 });
 
 router.post('/add-product', upload.array("images"), async (req, res) => {
 
     try {
-        const { productName, price, stockQuantity, status, sizes, category, description} = req.body;
+        const { productName, price, stockQuantity, status, sizes, category, description } = req.body;
 
         const parsedSizes = sizes.map(sizeObj => ({
             size: sizeObj.size.trim(),
-            price: parseFloat(sizeObj.price)
+            price: parseFloat(sizeObj.price),
         }));
 
         const imageUrls = [];
-        
+
         for (const file of req.files) {
+            // Upload each image to Firebase Storage and get the URL
             const imageUrl = await uploadImageToStorage(file);
             imageUrls.push(imageUrl);
         }
 
+        // Create new product with uploaded image URLs
         const newProduct = new Product({
             productName,
             price,
@@ -58,8 +61,10 @@ router.post('/add-product', upload.array("images"), async (req, res) => {
             category,
         });
 
+        // Save the new product to the database
         await newProduct.save();
 
+        // Update category with new product
         await Category.updateOne(
             { _id: category },
             { $push: { products: newProduct } }
@@ -82,24 +87,28 @@ async function uploadImageToStorage(file) {
         }
 
         const fileName = Date.now() + '-' + path.basename(file.originalname);
-        const filePath = `productImage/${fileName}`; // เส้นทางที่ต้องการบันทึกไฟล์
+        const filePath = `productImage/${fileName}`; // Path where you want to store the image
 
+        // Upload the file to Firebase Storage
         const fileUploadStream = bucket.file(filePath).createWriteStream({
             metadata: {
-                contentType: file.mimetype,
+                contentType: file.mimetype,  // Set the MIME type for the file
             },
         });
 
+        // Handle errors during upload
         fileUploadStream.on('error', (err) => {
             console.error(err);
             reject('Error uploading file');
         });
 
+        // Once the file upload is complete, resolve the promise with the image URL
         fileUploadStream.on('finish', () => {
-            const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+            const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;  // URL to access the image
             resolve(imageUrl);
         });
 
+        // Write the file to Firebase Storage
         fileUploadStream.end(file.buffer);
     });
 }

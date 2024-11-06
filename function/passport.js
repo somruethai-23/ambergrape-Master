@@ -31,6 +31,9 @@ passport.use(
                 displayName: profile.displayName,
                 username: profile.displayName,
               });
+
+              user.accessToken = accessToken;
+              user.refreshToken = refreshToken;
               await user.save();
             }
           }

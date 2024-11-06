@@ -10,7 +10,6 @@ const flash = require('connect-flash');
 const bodyParser = require('body-parser');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
-const nodemailer = require("nodemailer");
 const jwt = require('jsonwebtoken');
 const { decodeToken } = require('./function/tokenGenerate');
 
@@ -81,7 +80,7 @@ const authenticateToken = async (req, res, next) => {
 app.use(authenticateToken);
 
 app.use((req, res, next) => {
-  res.locals.user = req.user || null; // ส่งข้อมูล user ไปยังทุกๆ template
+  res.locals.user = req.user || null;
   next();
 });
 

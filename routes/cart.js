@@ -4,7 +4,6 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const Address = require('../models/Address');
-const { registerVersion } = require('firebase/app');
 const { isLogin } = require('../function/setting');
 
 // เพิ่มสินค้าเข้าตะกร้า
