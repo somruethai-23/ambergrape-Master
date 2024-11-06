@@ -49,7 +49,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: mongoStore,
-  cookie: { secure: false }  // ควรเป็น true ถ้าใช้ HTTPS
+  cookie: { secure: true } 
 }));
 
 

@@ -40,22 +40,19 @@ router.post('/add-product', upload.array("images"), async (req, res) => {
             price: parseFloat(sizeObj.price)
         }));
 
-        // สร้างอาร์เรย์เพื่อเก็บ URL หรือที่อยู่ของรูปภาพทั้งหมด
         const imageUrls = [];
         
-        // วนลูปผ่านทุกไฟล์ที่อัปโหลด
         for (const file of req.files) {
             const imageUrl = await uploadImageToStorage(file);
             imageUrls.push(imageUrl);
         }
 
-        // สร้างสินค้าใหม่โดยใช้ URL ของรูปภาพที่ได้รับ
         const newProduct = new Product({
             productName,
             price,
             description,
             stockQuantity,
-            images: imageUrls, // ใช้ properties ชื่อ images เพื่อเก็บ URL ของรูปภาพ
+            images: imageUrls,
             status,
             sizes: parsedSizes,
             category,
@@ -69,11 +66,11 @@ router.post('/add-product', upload.array("images"), async (req, res) => {
         );
 
         req.flash('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
-        res.redirect('/admin/manage-product');
+        return res.redirect('/admin/manage-product');
     } catch (error) {
         console.error(error);
         req.flash('error', 'เกิดข้อผิดพลาดในการ เพิ่มสินค้า');
-        res.redirect('/admin/manage-product');
+        return res.redirect('/admin/manage-product');
     }
 });
 

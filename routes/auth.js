@@ -115,6 +115,11 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 // Google callback route
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+    if (!req.user) {
+        return res.redirect('/');
+    }
+
+    // สร้าง JWT สำหรับผู้ใช้ที่ล็อกอินผ่าน Google
     const token = createSecretToken(req.user._id);
   
     res.cookie('token', token, {

@@ -11,25 +11,25 @@ router.get('/',  isAdmin, async(req,res)=> {
     } catch (error) {
         req.flash('error', 'ไม่สามารถเข้าจัดการหน้าหมวดหมู่ได้')
         console.error(error);
-        res.redirect('/categories');
+        return res.redirect('/categories');
     }
 });
 
-router.post('/add-category',  isAdmin, async (req, res) => {
+router.post('/add-category', isAdmin, async (req, res) => {
     try {
         const { categoryName } = req.body;
 
         // ตรวจสอบว่า CategoryName ไม่ว่างเปล่า
         if (!categoryName) {
             req.flash('error', 'กรุณาใส่ชื่อหมวดหมู่');
-            res.redirect('/categories');
+            return res.redirect('/categories');
         }
 
         // ตรวจสอบว่าหมวดหมู่นี้มีอยู่แล้วหรือไม่
         const existingCategory = await Category.findOne({ categoryName });
         if (existingCategory) {
             req.flash('error', 'มีหมวดหมู่นี้อยู่แล้ว');
-            res.redirect('/categories');
+            return res.redirect('/categories');
         }
 
         // สร้างหมวดหมู่ใหม่
@@ -37,10 +37,11 @@ router.post('/add-category',  isAdmin, async (req, res) => {
         await newCategory.save();
 
         req.flash('success', 'เพิ่มหมวดหมู่สำเร็จ');
-            res.redirect('/categories');
+        return res.redirect('/categories');
     } catch (error) {
+        console.log(error);
         req.flash('error', 'มีข้อผิดพลาดเกิดขึ้นจึงไม่สามารถเพิ่มหมวดหมู่ได้');
-        res.redirect('/categories');
+        return res.redirect('/categories');
     }
 });
 
