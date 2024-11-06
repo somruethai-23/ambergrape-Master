@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const bcrypt = require('bcryptjs');
 const User = require("../models/User");
-const { createSecretToken } = require("../function/tokenGenerate");
+const { createSecretToken, decodeToken } = require("../function/tokenGenerate");
 const passport = require('../function/passport'); 
 
 //REGISTER
@@ -91,6 +91,9 @@ router.post('/login', async (req, res) => {
         }
 
         const token = createSecretToken(user._id);
+        console.log('token:', token); // จะแสดงค่า token ที่สร้างขึ้น
+        console.log('user ID:', user._id); // จะแสดงค่า user ID จากฐานข้อมูล
+        console.log('req user ID:', req.user._id); // จะแสดงค่า user ID จาก session (หากมีการเข้าสู่ระบบ)
 
         res.cookie("token", token, {
             path: "/",
@@ -119,8 +122,7 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
         return res.redirect('/');
     }
 
-    // สร้าง JWT สำหรับผู้ใช้ที่ล็อกอินผ่าน Google
-    const token = createSecretToken(req.user._id);
+    const token = createSecretToken(user._id);
   
     res.cookie('token', token, {
       path: '/',
