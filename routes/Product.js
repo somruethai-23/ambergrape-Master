@@ -11,7 +11,7 @@ const { connectStorageEmulator } = require("firebase/storage");
 
 const storage = new Storage({
     projectId: process.env.project_ID,
-    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-7e57e1001b.json'),
+    credentials: JSON.parse(process.env.FIREBASE_CREDENTIALS),
 });
 
 const bucket = storage.bucket(process.env.storage_BUCKET);
