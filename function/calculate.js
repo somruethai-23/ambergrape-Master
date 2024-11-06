@@ -26,7 +26,7 @@ async function calculateMonthlyEarnings() {
 
         // Calculate monthly earnings
         const monthlyEarnings = monthlyOrders.reduce((total, order) => {
-            return total + (order.totalCost || 0) + order.shippingCost;
+            return total + (order.totalCost || 0);
         }, 0);
 
         // Return an array with a single element (the total earnings for the month)
@@ -60,7 +60,7 @@ async function calculateAnnualEarnings() {
 
         // Calculate annual earnings
         const annualEarnings = annualOrders.reduce((total, order) => {
-            return total + (order.totalCost || 0) + order.shippingCost ;
+            return total + (order.totalCost || 0) ;
         }, 0);
 
         // Return an array with a single element (the total earnings for the year)
