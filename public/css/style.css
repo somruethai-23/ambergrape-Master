@@ -7,15 +7,11 @@
     line-height: 1.6;
 }
 
-html {
+html, body {
     min-height: 100%;
-}
-
-body {
-    padding-top: 140px;
+    padding-top: 70px;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
     margin: 0;
     background-image: url('https://www.shutterstock.com/image-photo/macro-grey-paper-background-texture-600nw-2478795259.jpg');
     background-size: cover;
