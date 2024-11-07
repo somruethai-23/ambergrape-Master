@@ -22,9 +22,9 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
-    <div class="d-flex">
+    <div class="d-flex min-vh-100">
         <%- include('../partials/sidebar') %>
-        <div class="container mt-5 mb-5" style="padding-bottom: 80px;">
+        <div class="container-fluid" style="margin-left: 250px; padding-top: 20px;">
             <h1 class="text-center mb-4">จัดการลูกค้า</h1>
             
             <!-- Graphs Section -->
@@ -199,7 +199,5 @@
             window.location.href = `/admin/manage-customer?search=${searchTerm}&sort=${sortCriteria}&order=${sortOrder}`;
         }
     </script>
-
-    <%- include('../partials/footer') %>
 </body>
 </html>

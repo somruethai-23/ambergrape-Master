@@ -42,7 +42,7 @@ router.get('/dashboard', isAdmin, async (req, res) => {
 router.get('/manage-product', isAdmin, async (req, res) => {
     try {
         const products = await Product.find().populate('category');
-        res.render('admin/productManagement', { req: req, products: products });
+        res.render('admin/productManagement', { req: req, products: products, layout:false });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");
