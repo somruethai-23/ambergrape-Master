@@ -1,102 +1,126 @@
 <div class="navbareverypage bg-light shadow-lg fixed-top">
-<div class="container pt-3 ">
-  <div class="d-flex justify-content-between align-items-center">
-    <a class="navbar-brand" href="/"> 
-      <img src="/images/โลโก้วงกลม.png">
-    </a>
-
-
-    <div class="ms-md-5 d-flex align-items-center">
-      <div class="input-group me-2">
-        <input type="text" id="input-form" class="form-control" style="max-width: 200px;" placeholder="ค้นหา..." aria-label="Text input with dropdown button">
-        <button class="btn btn-dark d-none d-lg-block"><i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i></button>
-      </div>
-
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('input-form');
-        const searchButton = document.querySelector('.btn-dark');
-
-        searchButton.addEventListener('click', () => {
-          const query = searchInput.value.trim();
-          if (query) {
-            window.location.href = `/search?q=${encodeURIComponent(query)}`;
-          }
-        });
-      });
-
-      </script>
-      
-      <% if (user) { %>
-        <!-- Cart -->
-        <a href="/cart" type="button" class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center">
-            <i class="fa-solid fa-cart-shopping" style="color: #000000;"></i>
-        </a>
-        <!-- USER -->
-        <div class="dropdown">
-            <a class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-user" style="color: #000000;"></i>
+    <div class="container pt-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="/">
+                <img src="/images/โลโก้วงกลม.png" alt="Logo" class="img-fluid">
             </a>
-            <ul class="dropdown-menu" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" href="/user/profile/<%= user._id %>">โปรไฟล์</a></li>
-              <li><a class="dropdown-item" href="/auth/logout">ออกจากระบบ</a></li>
-            </ul>
+  
+            <div class="ms-md-5 d-flex align-items-center">
+                <div class="input-group me-2">
+                    <input type="text" id="input-form" class="form-control" style="max-width: 200px;" placeholder="ค้นหา..." aria-label="Text input with dropdown button">
+                    <button class="btn btn-dark d-block">
+                        <i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i>
+                    </button>
+                </div>
+  
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const searchInput = document.getElementById('input-form');
+                        const searchButton = document.querySelector('.btn-dark');
+  
+                        searchButton.addEventListener('click', () => {
+                            const query = searchInput.value.trim();
+                            if (query) {
+                                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                            }
+                        });
+                    });
+                </script>
+  
+                <% if (user) { %>
+                    <!-- Cart -->
+                    <a href="/cart" type="button" class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center">
+                        <i class="fa-solid fa-cart-shopping navbar-icon"></i>
+                    </a>
+                    <!-- USER -->
+                    <div class="dropdown">
+                        <a class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user navbar-icon"></i>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/user/profile/<%= user._id %>">โปรไฟล์</a></li>
+                            <li><a class="dropdown-item" href="/auth/logout">ออกจากระบบ</a></li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <!-- USER -->
+                    <div class="dropdown">
+                        <a class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user navbar-icon"></i>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/auth/register">สมัครสมาชิก</a></li>
+                            <li><a class="dropdown-item" href="/auth/login">เข้าสู่ระบบ</a></li>
+                        </ul>
+                    </div>
+                <% } %>
+  
+            </div>
         </div>
-    <% } else { %>
-        <!-- USER -->
-        <div class="dropdown">
-            <a class="navbaricon btn fw-500 rounded me-2 d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-user" style="color: #000000;"></i>
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="/auth/register">สมัครสมาชิก</a></li>
-                <li><a class="dropdown-item" href="/auth/login">เข้าสู่ระบบ</a></li>
-            </ul>
+    </div>
+  
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <button class="navbar-toggler mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center text-center" id="navbarSupportedContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <% if (user && user.isAdmin === true) { %>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                จัดการสินค้า
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item text-center href="/admin/dashboard">แดชบอร์ด</a></li>  
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/aboutus">เกี่ยวกับเรา</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contactus">ติดต่อเรา</a>
+                        </li>
+                    </ul>
+                    <% } %>
+                </div>
+            </div>
         </div>
-    <% } %>
-    
-      
-
-    </div>
-    
+    </nav>
   </div>
-</div>
-
-
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light">
-  <div class="container-fluid">
-    <button class="navbar-toggler mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-center text-center" id="navbarSupportedContent">
-      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-        <% if (user && user.isAdmin === true) { %>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              จัดการสินค้า
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="/admin/dashboard">แดชบอร์ด</a></li>  
-            </ul>
-          </li>
-          
-        <% } else { %>
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/aboutus">เกี่ยวกับเรา</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/contactus">ติดต่อเรา</a>
-        </li>
-      </ul>
-      <% } %>
-    </div>
-  </div>
-</nav>
-</div>
+  
+  <style>
+    /* Make icons larger on smaller screens */
+    .navbar-icon {
+        font-size: 1.5rem; /* Default size for larger screens */
+    }
+  
+    @media (max-width: 767px) {
+        .navbar-icon {
+            font-size: 2rem; /* Larger size for smaller screens */
+        }
+    }
+  
+    /* Adjust navbar and input group for smaller screens */
+    @media (max-width: 767px) {
+        .navbar-brand img {
+            max-width: 80%; /* Make the logo smaller on smaller screens */
+        }
+  
+        .input-group {
+            max-width: 150px; /* Adjust search box width */
+        }
+  
+        .navbar-toggler {
+            margin-bottom: 10px; /* Adjust the toggle button */
+        }
+    }
+  </style>

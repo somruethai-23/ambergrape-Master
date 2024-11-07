@@ -20,6 +20,7 @@ body {
     background-image: url('https://www.shutterstock.com/image-photo/macro-grey-paper-background-texture-600nw-2478795259.jpg');
     background-size: cover;
     background-repeat: no-repeat;
+    font-size: 1rem;
 }
 
 main {
@@ -141,3 +142,11 @@ a:hover {
     opacity: 1; /* ทำให้ carousel-item ที่ active ปรากฏ */
 }
 
+/* ให้ Sidebar อยู่ที่ด้านซ้ายสุดและยืดไปจนถึงความสูงของหน้าจอ */
+.sidebar {
+    position: sticky; /* หรือ position: fixed */
+    top: 0; /* ตั้งตำแหน่งให้เริ่มจากด้านบนสุด */
+    height: 100vh; /* ความสูงเต็มหน้าจอ */
+    width: 250px; /* ความกว้างของ Sidebar */
+    z-index: 1000; /* ให้อยู่บนเนื้อหาหลัก */
+}
