@@ -20,7 +20,7 @@ body {
     background-image: url('https://www.shutterstock.com/image-photo/macro-grey-paper-background-texture-600nw-2478795259.jpg');
     background-size: cover;
     background-repeat: no-repeat;
-    font-size: 1rem;
+    
 }
 
 main {
@@ -50,6 +50,9 @@ a {
     position: relative;
 }
 
+@media screen {
+    
+}
 a:hover {
     text-decoration: underline; /* ขีดเส้นใต้เมื่อ hover */
     text-decoration-thickness: 2px; /* ความหนาของเส้น */

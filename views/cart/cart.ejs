@@ -105,7 +105,7 @@
         <form action="/order/place-order" method="POST">
             <input type="hidden" name="totalCost" value="<%= (cart.totalPrice + shippingCost) %>">
             <input type="hidden" name="shippingCost" value="<%= shippingCost %>">
-            <div class="text-end mt-3">
+            <div class="text-end mt-3 mb-3">
                 <button type="submit" class="btn btn-outline-dark btn-sm">
                     ยืนยันการสั่งซื้อ
                 </button>
