@@ -1,190 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amber Grape Farm</title>
-    
-    <!-- Bootstrap5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-    <!-- Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&family=Poppins&display=swap" rel="stylesheet">
-    <!-- Font Awesome (ICON) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- CSS -->
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Amber Grape Farm</title>
+  
+   <!-- Bootstrap5 -->
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+   <!-- Font -->
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&family=Poppins&display=swap" rel="stylesheet">
+   <!-- Font Awesome (ICON) -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   <!-- CSS -->
+   <link rel="stylesheet" type="text/css" href="/css/style.css">
 </head>
 <body>
-    <%- include('../partials/navbar') %>
-<div class="d-flex">
-    <%- include('../partials/sidebar') %>
-    
-    <div class="container-fluid">
-        <div class="container mt-5">
-            <h1 class="text-center">จัดการออเดอร์</h1>
-            
-            <!-- Search Bar -->
-            <div class="mb-3">
-                <input type="text" id="orderSearch" class="form-control" placeholder="ค้นหา Order ID หรือ ชื่อลูกค้า">
-            </div>
-    
-            <!-- Order Status Tabs -->
-            <ul class="nav nav-tabs" id="orderStatusTabs" role="tablist">
-                <% const orderStatuses = ['ยังไม่ได้ชำระ', 'รอเช็คเงินเข้า', 'กำลังแพ็คสินค้า', 'จัดส่ง', 'ยกเลิก']; %>
-                <% orderStatuses.forEach((status, index) => { %>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link <%= index === 0 ? 'active' : '' %>" id="tab-<%= status %>" data-bs-toggle="tab" data-bs-target="#content-<%= status %>" type="button" role="tab" aria-controls="content-<%= status %>" aria-selected="<%= index === 0 %>">
-                            <!-- Status with Icon -->
-                            <% if (status === 'ยังไม่ได้ชำระ') { %>
-                                <i class="fas fa-exclamation-circle text-danger"></i>
-                            <% } else if (status === 'จัดส่ง') { %>
-                                <i class="fas fa-check-circle text-success"></i>
-                            <% } else if (status === 'ยกเลิก') { %>
-                                <i class="fa-solid fa-circle-xmark" style="color: #c01b1b;"></i>
-                            <% } else { %>
-                                <i class="fas fa-clock text-warning"></i>
-                            <% } %>
-                            <%= status %>
-                        </button>
-                    </li>
-                <% }) %>
-            </ul>
-    
-            <div class="tab-content mt-3" id="orderStatusTabsContent">
-                <% orderStatuses.forEach((status, index) => { %>
-                    <div class="tab-pane fade <%= index === 0 ? 'show active' : '' %>" id="content-<%= status %>" role="tabpanel" aria-labelledby="tab-<%= status %>">
-                        <% const filteredOrders = orders.filter(order => order.orderStatus === status); %>
-                        <% if (filteredOrders.length === 0) { %>
-                            <p class="text-center">ไม่มีออเดอร์ที่อยู่ในสถานะ "<%= status %>"</p>
-                        <% } else { %>
-                            <table class="table table-striped table-bordered">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>หมายเลขคำสั่งซื้อ</th>
-                                        <th>ลูกค้า</th>
-                                        <th>สินค้าที่สั่ง</th>
-                                        <th>ราคาทั้งหมด</th>
-                                        <th>วันสั่งซื้อ</th>
-                                        <th>หลักฐานการโอน</th>
-                                        <th>สถานะต่อไป</th>
-                                        <th>ยกเลิก</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="orderTableBody">
-                                    <% filteredOrders.forEach(order => { %>
-                                        <tr>
-                                            <td><%= order._id %></td>
-                                            <td><%= order.user.username %></td>
-                                            <td>
-                                                <ul>
-                                                    <% order.items.forEach(item => { %>
-                                                        <li>
-                                                            <strong>สินค้า:</strong> <span class="text-primary"><%= item.product.productName %></span><br>
-                                                            <strong>ไซส์:</strong> <%= item.size %><br>
-                                                            <strong>จำนวน:</strong> <span class="text-danger"><%= item.quantity %></span><br>
-                                                            <strong>ราคา:</strong> ฿<%= item.price.toLocaleString() %>
-                                                        </li>
-                                                        <hr>
-                                                    <% }) %>
-                                                </ul>
-                                            </td>
-                                            <td>฿ <%= (order.totalCost + order.shippingCost).toLocaleString() %></td>
-                                            <td><%= dayjs(order.createdAt).format('DD/MM/YYYY') %></td>
-                                            <td class="col-2">
-                                                <a href="<%= order.slipImage %>" target="_blank">
-                                                    <img src="<%= order.slipImage %>" alt="slipImage" class="img-fluid" style="max-height: 75px; max-width: 100px; object-fit: cover;">
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <% if (order.orderStatus !== 'จัดส่ง' && order.orderStatus !== 'ยกเลิก') { %>
-                                                    <form action="/admin/update-status/<%= order._id %>" method="POST">
-                                                        <% const statuses = ['ยังไม่ได้ชำระ', 'รอเช็คเงินเข้า', 'กำลังแพ็คสินค้า', 'จัดส่ง', 'ยกเลิก']; %>
-                                                        <% const currentIndex = statuses.indexOf(order.orderStatus); %>
-                                                        <% const nextStatus = statuses[currentIndex + 1] || order.orderStatus; %>
-                                                        <input type="hidden" name="status" value="<%= nextStatus %>">
-                                                        <button type="submit" class="btn btn-primary" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการเปลี่ยนสถานะเป็น \"<%= nextStatus %>\"?')">เปลี่ยนสถานะ</button>
-                                                    </form>
-                                                <% } %>
-                                            </td>
-                                            <td>
-                                                <form action="/admin/cancel-order/<%= order._id %>" method="POST" class="d-inline">
-                                                    <input type="hidden" name="status" value="ยกเลิก">
-                                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal-<%= order._id %>">
-                                                        <i class="fa-regular fa-trash-can" style="color: #fffafa;"></i>
-                                                    </button>
-                                                    <!-- Modal ยืนยันการยกเลิก -->
-                                                    <div class="modal fade" id="cancelModal-<%= order._id %>" tabindex="-1" aria-labelledby="cancelModalLabel-<%= order._id %>" aria-hidden="true">
-                                                        <div class="modal-dialog">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="cancelModalLabel-<%= order._id %>">ยกเลิกออเดอร์</h5>
-                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <div class="mb-3">
-                                                                        <label for="reason" class="form-label">เหตุผลในการยกเลิก</label>
-                                                                        <textarea class="form-control" name="reason" required></textarea>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                                    <button type="submit" class="btn btn-danger">ยืนยันการยกเลิก</button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    <% }) %>
-                                </tbody>
-                            </table>
-                        <% } %>
-                    </div>
-                <% }) %>
-            </div>
-        </div>
-    </div>
-    
+   <%- include('../partials/navbar') %>
+<div class="d-flex min-vh-100">
+   <%- include('../partials/sidebar') %>
+  
+   <div class="container-fluid">
+       <div class="container mt-5">
+           <h1 class="text-center">จัดการออเดอร์</h1>
+          
+           <!-- Search Bar -->
+           <div class="mb-3">
+               <input type="text" id="orderSearch" class="form-control" placeholder="ค้นหา Order ID หรือ ชื่อลูกค้า">
+           </div>
+  
+           <!-- Order Status Tabs -->
+           <ul class="nav nav-tabs" id="orderStatusTabs" role="tablist">
+               <% const orderStatuses = ['ยังไม่ได้ชำระ', 'รอเช็คเงินเข้า', 'กำลังแพ็คสินค้า', 'จัดส่ง', 'ยกเลิก']; %>
+               <% orderStatuses.forEach((status, index) => { %>
+                   <li class="nav-item" role="presentation">
+                       <button class="nav-link <%= index === 0 ? 'active' : '' %>" id="tab-<%= status %>" data-bs-toggle="tab" data-bs-target="#content-<%= status %>" type="button" role="tab" aria-controls="content-<%= status %>" aria-selected="<%= index === 0 %>">
+                           <!-- Status with Icon -->
+                           <% if (status === 'ยังไม่ได้ชำระ') { %>
+                               <i class="fas fa-exclamation-circle text-danger"></i>
+                           <% } else if (status === 'จัดส่ง') { %>
+                               <i class="fas fa-check-circle text-success"></i>
+                           <% } else if (status === 'ยกเลิก') { %>
+                               <i class="fa-solid fa-circle-xmark" style="color: #c01b1b;"></i>
+                           <% } else { %>
+                               <i class="fas fa-clock text-warning"></i>
+                           <% } %>
+                           <%= status %>
+                       </button>
+                   </li>
+               <% }) %>
+           </ul>
+  
+           <div class="tab-content mt-3" id="orderStatusTabsContent">
+               <% orderStatuses.forEach((status, index) => { %>
+                   <div class="tab-pane fade <%= index === 0 ? 'show active' : '' %>" id="content-<%= status %>" role="tabpanel" aria-labelledby="tab-<%= status %>">
+                       <% const filteredOrders = orders.filter(order => order.orderStatus === status); %>
+                       <% if (filteredOrders.length === 0) { %>
+                           <p class="text-center">ไม่มีออเดอร์ที่อยู่ในสถานะ "<%= status %>"</p>
+                       <% } else { %>
+                           <table class="table table-striped table-bordered">
+                               <thead class="thead-light">
+                                   <tr>
+                                       <th>หมายเลขคำสั่งซื้อ</th>
+                                       <th>ลูกค้า</th>
+                                       <th>สินค้าที่สั่ง</th>
+                                       <th>ราคาทั้งหมด</th>
+                                       <th>วันสั่งซื้อ</th>
+                                       <th>หลักฐานการโอน</th>
+                                       <th>สถานะต่อไป</th>
+                                       <th>ยกเลิก</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="orderTableBody">
+                                   <% filteredOrders.forEach(order => { %>
+                                       <tr>
+                                           <td><%= order._id %></td>
+                                           <td><%= order.user.username %></td>
+                                           <td>
+                                               <ul>
+                                                   <% order.items.forEach(item => { %>
+                                                       <li>
+                                                           <% if (item.product) { %>
+                                                               <strong>สินค้า:</strong> <span class="text-primary"><%= item.product.productName %></span><br>
+                                                           <% } else { %>
+                                                               <strong>สินค้า:</strong> <span class="text-danger">Product not available</span><br>
+                                                           <% } %>
+                                                           <strong>ไซส์:</strong> <%= item.size %><br>
+                                                           <strong>จำนวน:</strong> <span class="text-danger"><%= item.quantity %></span><br>
+                                                           <strong>ราคา:</strong> ฿<%= item.price.toLocaleString() %>
+                                                       </li>
+                                                   <% }); %>
+                                               </ul>
+                                           </td>
+                                           <td>฿ <%= (order.totalCost + order.shippingCost).toLocaleString() %></td>
+                                           <td><%= dayjs(order.createdAt).format('DD/MM/YYYY') %></td>
+                                           <td class="col-2">
+                                               <a href="<%= order.slipImage %>" target="_blank">
+                                                   <img src="<%= order.slipImage %>" alt="slipImage" class="img-fluid" style="max-height: 75px; max-width: 100px; object-fit: cover;">
+                                               </a>
+                                           </td>
+                                           <td>
+                                               <% if (order.orderStatus !== 'จัดส่ง' && order.orderStatus !== 'ยกเลิก') { %>
+                                                   <form action="/admin/update-status/<%= order._id %>" method="POST">
+                                                       <% const statuses = ['ยังไม่ได้ชำระ', 'รอเช็คเงินเข้า', 'กำลังแพ็คสินค้า', 'จัดส่ง', 'ยกเลิก']; %>
+                                                       <% const currentIndex = statuses.indexOf(order.orderStatus); %>
+                                                       <% const nextStatus = statuses[currentIndex + 1] || order.orderStatus; %>
+                                                       <input type="hidden" name="status" value="<%= nextStatus %>">
+                                                       <button type="submit" class="btn btn-primary" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการเปลี่ยนสถานะเป็น \"<%= nextStatus %>\"?')">เปลี่ยนสถานะ</button>
+                                                   </form>
+                                               <% } %>
+                                           </td>
+                                           <td>
+                                               <form action="/admin/cancel-order/<%= order._id %>" method="POST" class="d-inline">
+                                                   <input type="hidden" name="status" value="ยกเลิก">
+                                                   <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal-<%= order._id %>">
+                                                       <i class="fa-regular fa-trash-can" style="color: #fffafa;"></i>
+                                                   </button>
+                                                   <!-- Modal ยืนยันการยกเลิก -->
+                                                   <div class="modal fade" id="cancelModal-<%= order._id %>" tabindex="-1" aria-labelledby="cancelModalLabel-<%= order._id %>" aria-hidden="true">
+                                                       <div class="modal-dialog">
+                                                           <div class="modal-content">
+                                                               <div class="modal-header">
+                                                                   <h5 class="modal-title" id="cancelModalLabel-<%= order._id %>">ยกเลิกออเดอร์</h5>
+                                                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                               </div>
+                                                               <div class="modal-body">
+                                                                   <div class="mb-3">
+                                                                       <label for="reason" class="form-label">เหตุผลในการยกเลิก</label>
+                                                                       <textarea class="form-control" name="reason" required></textarea>
+                                                                   </div>
+                                                               </div>
+                                                               <div class="modal-footer">
+                                                                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                                   <button type="submit" class="btn btn-danger">ยืนยันการยกเลิก</button>
+                                                               </div>
+                                                           </div>
+                                                       </div>
+                                                   </div>
+                                               </form>
+                                           </td>
+                                       </tr>
+                                   <% }) %>
+                               </tbody>
+                           </table>
+                       <% } %>
+                   </div>
+               <% }) %>
+           </div>
+       </div>
+   </div>
+  
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var orderStatusTabs = document.getElementById('orderStatusTabs');
-            var activeTab = localStorage.getItem('activeTab');
-    
-            if (activeTab) {
-                var tab = new bootstrap.Tab(document.querySelector(`button[data-bs-target="${activeTab}"]`));
-                tab.show();
-            }
-    
-            orderStatusTabs.addEventListener('shown.bs.tab', function(event) {
-                localStorage.setItem('activeTab', event.target.getAttribute('data-bs-target'));
-            });
-    
-            // Search functionality
-            const searchInput = document.getElementById('orderSearch');
-            const tableBody = document.getElementById('orderTableBody');
-    
-            searchInput.addEventListener('keyup', function() {
-                const filter = searchInput.value.toLowerCase();
-                const rows = tableBody.querySelectorAll('tr');
-                
-                rows.forEach(row => {
-                    const orderId = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                    const customerName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                    
-                    if (orderId.includes(filter) || customerName.includes(filter)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        });
+       document.addEventListener('DOMContentLoaded', function() {
+           var orderStatusTabs = document.getElementById('orderStatusTabs');
+           var activeTab = localStorage.getItem('activeTab');
+  
+           if (activeTab) {
+               var tab = new bootstrap.Tab(document.querySelector(`button[data-bs-target="${activeTab}"]`));
+               tab.show();
+           }
+  
+           orderStatusTabs.addEventListener('shown.bs.tab', function(event) {
+               localStorage.setItem('activeTab', event.target.getAttribute('data-bs-target'));
+           });
+  
+           // Search functionality
+           const searchInput = document.getElementById('orderSearch');
+           const tableBody = document.getElementById('orderTableBody');
+  
+           searchInput.addEventListener('keyup', function() {
+               const filter = searchInput.value.toLowerCase();
+               const rows = tableBody.querySelectorAll('tr');
+              
+               rows.forEach(row => {
+                   const orderId = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                   const customerName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                  
+                   if (orderId.includes(filter) || customerName.includes(filter)) {
+                       row.style.display = '';
+                   } else {
+                       row.style.display = 'none';
+                   }
+               });
+           });
+       });
 </script>
-<%- include('../partials/footer') %>
 </body>
 </html>
