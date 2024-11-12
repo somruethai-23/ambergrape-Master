@@ -26,8 +26,8 @@ body {
 main {
     flex: 1;
     display: flex; /* ให้ main ใช้ flex */
-    flex-direction: column; /* จัดเรียงในแนวตั้ง */
-    justify-content: center; /* จัดให้อยู่กลางในแนวตั้ง */
+    flex-direction: column;
+    justify-content: center; 
 }
 
 
@@ -46,7 +46,7 @@ section{
 }
 
 a {
-    text-decoration: none; /* ลบขีดเส้นใต้เริ่มต้น */
+    text-decoration: none;
     position: relative;
 }
 
@@ -54,10 +54,10 @@ a {
     
 }
 a:hover {
-    text-decoration: underline; /* ขีดเส้นใต้เมื่อ hover */
-    text-decoration-thickness: 2px; /* ความหนาของเส้น */
-    text-underline-offset: 3px; /* ระยะห่างระหว่างข้อความกับเส้นใต้ */
-    text-decoration-color: #a8a8a8; /* สีของเส้นใต้ */
+    text-decoration: underline; 
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    text-decoration-color: #a8a8a8; 
 }
 
 .banner {
@@ -65,7 +65,7 @@ a:hover {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: 400px !important; /* หรือปรับตามต้องการ */
+    height: 400px !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -81,9 +81,9 @@ a:hover {
     width: 100%;
     height: 100%;
     opacity: 0;
-    display: flex; /* ใช้ flexbox เพื่อให้จัดตำแหน่งกลางได้ง่าย */
-    justify-content: center; /* จัดให้อยู่กลางในแนวนอน */
-    align-items: center; /* จัดให้อยู่กลางในแนวตั้ง */
+    display: flex; 
+    justify-content: center;
+    align-items: center;
     transition: opacity 0.3s ease;
 }
 
@@ -113,35 +113,33 @@ a:hover {
     opacity: 0.4;
 }
 
-/* หน้าIndex checkbox */
 .form-check-input:checked {
-    background-color: #007bff; /* สีพื้นหลังเมื่อถูกเลือก */
-    border-color: #007bff; /* สีของขอบ checkbox */
+    background-color: #007bff; 
+    border-color: #007bff; 
 }
 
 /* เปลี่ยนสีเมื่อ hover */
 .form-check-input:hover {
-    background-color: #5a9bf6; /* สีเมื่อ hover */
-    border-color: #5a9bf6; /* สีของขอบ checkbox เมื่อ hover */
+    background-color: #5a9bf6; 
+    border-color: #5a9bf6;
 }
 
-/* เปลี่ยนสี label เมื่อ checkbox ถูกเลือก */
 .form-check-input:checked + .form-check-label {
-    color: #007bff; /* สีของ label เมื่อ checkbox ถูกเลือก */
+    color: #007bff; 
 }
 
 .carousel-item {
-    height: 600px; /* ปรับความสูงตามที่ต้องการ */
+    height: 600px; 
 }
 
 .carousel-item img {
     width: 100%;
-    height: 100%; /* ให้สูงของภาพเป็น 100% ของ carousel-item */
-    object-fit: cover; /* ตัดภาพให้พอดีกับขนาด โดยไม่บิดเบือนสัดส่วน */
-    transition: opacity 0.5s ease; /* เพิ่ม transition สำหรับการเปลี่ยนแปลง opacity */
+    height: 100%; 
+    object-fit: cover; 
+    transition: opacity 0.5s ease;
 }
 
 .carousel-item.active {
-    opacity: 1; /* ทำให้ carousel-item ที่ active ปรากฏ */
+    opacity: 1;
 }
 

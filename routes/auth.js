@@ -4,7 +4,7 @@ const User = require("../models/User");
 const { createSecretToken } = require("../function/tokenGenerate");
 const passport = require('../function/passport'); 
 
-//REGISTER
+
 router.get("/register", (req,res) => {
     res.render('user/register', { req:req })
 })
@@ -68,7 +68,6 @@ router.post("/register", async (req,res)=> {
 });
 
 
-//LOGIN
 router.get("/login", (req,res) => {
     res.render('user/login', { req:req })
 })
@@ -109,17 +108,15 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// GOOGLE
-// Start Google authentication
+
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Google callback route
+
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
      if (!req.user) {
         return res.redirect('/');
     }
 
-    // สร้าง JWT สำหรับผู้ใช้ที่ล็อกอินผ่าน Google
      const token = createSecretToken(req.user._id); 
   
     res.cookie('token', token, {
@@ -131,9 +128,9 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
     });
   
     res.redirect('/');
-  });
+});
     
-// logout
+
 router.get('/logout', (req, res) => {
     res.clearCookie('token');
     req.flash('success', 'ลงชื่อออกสำเร็จ')

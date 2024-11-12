@@ -21,19 +21,8 @@
 <body>
 <%- include('../partials/navbar')%>
 
-<% if (error && error.length) { %>
-    <div class="alert alert-danger d-flex justify-content-between align-items-center">
-        <%= error[0] %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<% } %>
-<% if (success && success.length) { %>
-    <div class="alert alert-success d-flex justify-content-between align-items-center">
-        <%= success[0] %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<% } %>
 <div class="container-xl px-4 mt-4">
+    <%- include('../partials/flash') %>
     <hr class="mt-0 mb-4">
     <div class="row">
         <%- include('../partials/sidebarUser') %>

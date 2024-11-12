@@ -46,7 +46,7 @@ const mongoStore = MongoStore.create({
 app.use(session({
   secret: process.env.SEC_KEY,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: mongoStore,
   cookie: { secure: true } 
 }));
@@ -80,16 +80,15 @@ const authenticateToken = async (req, res, next) => {
 app.use(authenticateToken);
 
 app.use((req, res, next) => {
-  res.locals.user = req.user || null;
-  next();
-});
-
-app.use((req, res, next) => {
   res.locals.error = req.flash('error');
   res.locals.success = req.flash('success');
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
 
 app.locals.getOrderProgress = function(orderStatus) {
   const statuses = ['ยังไม่ได้ชำระ', 'ชำระแล้ว', 'กำลังดำเนินการ', 'จัดส่งแล้ว', 'สำเร็จ'];
@@ -130,10 +129,11 @@ app.get('/search', (req, res) => {
       })
       .catch(err => {
         console.error(err);
-        res.status(500).render('error', { message: 'เกิดข้อผิดพลาดในการค้นหา' });
+        req.flash('error', 'เกิดข้อผิดพลาด หาสินค้าไม่พบ');
+        return res.redirect('/');
       });
   } else {
-    res.redirect('/');
+    return res.redirect('/');
   }
 });
 
@@ -141,17 +141,14 @@ app.get('/products', async (req, res) => {
   try {
     const { searchTerm = '', categories = 'all', sortOption = '' } = req.query;
 
-    // Build query object
     let query = {};
     if (searchTerm) {
       query.productName = new RegExp(searchTerm, 'i');
     }
     if (categories !== 'all') {
-      // Split categories and ensure all selected categories are included
       query.category = { $in: categories.split(',') };
     }
 
-    // Sorting
     let sort = {};
     switch (sortOption) {
       case 'newest':
@@ -173,11 +170,11 @@ app.get('/products', async (req, res) => {
         break;
     }
 
-    // Find products
     const products = await Product.find(query).sort(sort).populate('category');
     res.json(products);
   } catch (err) {
-    res.status(500).send(err.message);
+    req.flash('error', 'เกิดข้อผิดพลาด');
+    return res.redirect('/')
   }
 });
 
