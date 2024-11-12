@@ -4,16 +4,13 @@ const Product = require('../models/Product');
 
 async function calculateMonthlyEarnings() {
     try {
-        // Get the current year and month
         const currentDate = new Date();
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        // Set the start and end of the month
         const startOfMonth = new Date(year, month, 1);
         const endOfMonth = new Date(year, month + 1, 0);
 
-        // Query orders created in the current month and with status 'จัดส่ง'
         const monthlyOrders = await Order.find({
             createdAt: {
                 $gte: startOfMonth,
@@ -22,13 +19,10 @@ async function calculateMonthlyEarnings() {
             orderStatus: 'จัดส่ง'
         });
 
-
-        // Calculate monthly earnings
         const monthlyEarnings = monthlyOrders.reduce((total, order) => {
             return total + (order.totalCost || 0);
         }, 0);
 
-        // Return an array with a single element (the total earnings for the month)
         return [monthlyEarnings];
     } catch (error) {
         console.error('Error in calculating monthly earnings:', error);
