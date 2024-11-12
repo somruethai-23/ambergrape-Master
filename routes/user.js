@@ -22,12 +22,12 @@ router.get("/profile/:userId",  async (req,res)=> {
 });
 
 router.get("/profile-edit/:userId/",  async (req,res)=> {
-    const user = await User.findById(req.params.userId);
+    const user = await User.findById(req.params.userId).populate("addresses");
     if (!user) {
         req.flash('error', 'กรุณาลงชื่อเข้าใช้ก่อน');
         return res.redirect("/login");
     }
-    res.render('user/profileEdit', { req:req, user:user });
+    res.render('user/profileEdit', { req:req, user });
 });
 
 // แก้ไขข้อมูลส่วนตัว

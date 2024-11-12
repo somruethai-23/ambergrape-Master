@@ -46,9 +46,9 @@ const mongoStore = MongoStore.create({
 app.use(session({
   secret: process.env.SEC_KEY,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: mongoStore,
-  cookie: { secure: true } 
+  cookie: { secure: false } 
 }));
 
 
@@ -80,16 +80,15 @@ const authenticateToken = async (req, res, next) => {
 app.use(authenticateToken);
 
 app.use((req, res, next) => {
-  res.locals.user = req.user || null;
-  next();
-});
-
-app.use((req, res, next) => {
   res.locals.error = req.flash('error');
   res.locals.success = req.flash('success');
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
 
 app.locals.getOrderProgress = function(orderStatus) {
   const statuses = ['ยังไม่ได้ชำระ', 'ชำระแล้ว', 'กำลังดำเนินการ', 'จัดส่งแล้ว', 'สำเร็จ'];
