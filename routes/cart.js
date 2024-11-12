@@ -158,7 +158,7 @@ router.post('/plus/:id', isLogin, async (req, res) => {
             cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
             await cart.save();
 
-            res.redirect('/cart'); // Redirect to the cart page
+            res.redirect('/cart');
         } else {
             req.flash('error', 'เกิดข้อผิดพลาดในการเพิ่มจำนวนสินค้า');
             res.redirect('/cart');
