@@ -20,7 +20,7 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
-<div class="d-flex min-vh-100">
+<div class="d-flex">
     <%- include('../partials/sidebar') %>
     
     <div class="container-fluid">
@@ -83,16 +83,13 @@
                                                 <ul>
                                                     <% order.items.forEach(item => { %>
                                                         <li>
-                                                            <% if (item.product) { %>
-                                                                <strong>สินค้า:</strong> <span class="text-primary"><%= item.product.productName %></span><br>
-                                                            <% } else { %>
-                                                                <strong>สินค้า:</strong> <span class="text-danger">Product not available</span><br>
-                                                            <% } %>
+                                                            <strong>สินค้า:</strong> <span class="text-primary"><%= item.product.productName %></span><br>
                                                             <strong>ไซส์:</strong> <%= item.size %><br>
                                                             <strong>จำนวน:</strong> <span class="text-danger"><%= item.quantity %></span><br>
                                                             <strong>ราคา:</strong> ฿<%= item.price.toLocaleString() %>
                                                         </li>
-                                                    <% }); %>
+                                                        <hr>
+                                                    <% }) %>
                                                 </ul>
                                             </td>
                                             <td>฿ <%= (order.totalCost + order.shippingCost).toLocaleString() %></td>
@@ -188,5 +185,6 @@
             });
         });
 </script>
+<%- include('../partials/footer') %>
 </body>
 </html>

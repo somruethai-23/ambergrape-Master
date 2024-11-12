@@ -22,10 +22,15 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
-    <div class="d-flex min-vh-100">
+    <div class="d-flex">
         <%- include('../partials/sidebar') %>
+<<<<<<< HEAD
         <div class="container-fluid">
             <h1 class="text-center mb-4 mt-5">จัดการลูกค้า</h1>
+=======
+        <div class="container mt-5 mb-5" style="padding-bottom: 80px;">
+            <h1 class="text-center mb-4">จัดการลูกค้า</h1>
+>>>>>>> revert-Master
             
             <!-- Graphs Section -->
             <div class="row mb-4">
@@ -199,5 +204,7 @@
             window.location.href = `/admin/manage-customer?search=${searchTerm}&sort=${sortCriteria}&order=${sortOrder}`;
         }
     </script>
+
+    <%- include('../partials/footer') %>
 </body>
 </html>
