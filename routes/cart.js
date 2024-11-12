@@ -6,7 +6,6 @@ const User = require('../models/User');
 const Address = require('../models/Address');
 const { isLogin } = require('../function/setting');
 
-// เพิ่มสินค้าเข้าตะกร้า
 router.post('/add-to-cart/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const { quantity, size } = req.body;
@@ -70,7 +69,7 @@ router.post('/add-to-cart/:id', isLogin, async (req, res) => {
     }
 });
 
-// หน้าสินค้าในตะกร้าก่อน checkout 
+
 router.get('/', isLogin, async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user._id })
@@ -140,7 +139,6 @@ router.get('/', isLogin, async (req, res) => {
 
 
 
-// เพิ่มจำนวนสินค้า
 router.post('/plus/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size;
@@ -171,7 +169,6 @@ router.post('/plus/:id', isLogin, async (req, res) => {
     }
 });
 
-// ลดจำนวนสินค้า
 router.post('/minus/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
     const size = req.query.size;
@@ -205,13 +202,11 @@ router.post('/minus/:id', isLogin, async (req, res) => {
     }
 });
 
-// POST route to remove item from cart
 router.post('/remove-from-cart/:id', isLogin, async (req, res) => {
     const productId = req.params.id;
-    const size = req.query.size; // รับค่า size จาก query string
+    const size = req.query.size; 
 
     try {
-        // Retrieve the cart from the database
         let cart = await Cart.findOne({ user: req.user._id });
 
         if (!cart) {
@@ -219,38 +214,33 @@ router.post('/remove-from-cart/:id', isLogin, async (req, res) => {
             return res.redirect('/cart');
         }
 
-        // Find the item in the cart
         const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
 
         if (itemIndex >= 0) {
-            // Get the item
             const item = cart.items[itemIndex];
 
-            // Update the total price and quantity
             cart.totalPrice -= item.price * item.quantity;
             cart.totalQuantity -= item.quantity;
 
-            // Remove the item from the cart
             cart.items.splice(itemIndex, 1);
 
-            // Save the updated cart to the database
             await cart.save();
 
             req.flash('success', 'ลบสินค้าออกจากตะกร้าสำเร็จ');
-            res.redirect('/cart');
+            return res.redirect('/cart');
         } else {
             req.flash('error', 'ไม่พบสินค้านี้ในตะกร้า');
-            res.redirect('/cart');
+            return res.redirect('/cart');
         }
+
     } catch (err) {
         console.log(err);
         req.flash('error', 'เกิดข้อผิดพลาดในการลบสินค้าออกจากตะกร้า');
-        res.redirect('/cart');
+        return res.redirect('/cart');
     }
 });
 
 
-// เคลียร์ตะกร้า
 router.delete("/", isLogin, (req, res) => {
     try {
         req.session.cart = null;
@@ -258,11 +248,10 @@ router.delete("/", isLogin, (req, res) => {
     } catch (err) {
         req.flash('error', 'ลบไม่สำเร็จ กรุณาลองใหม่');
         console.log('ลบสินค้าในตะกร้ามีปัญหา: ', err);
+        return res.redirect('/cart');
     }
-    res.redirect('/');
+    return res.redirect('/');
 });
 
 
-
-// ดูตะกร้าทั้งหมด 
 module.exports = router;

@@ -2,7 +2,6 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const Product = require('../models/Product');
 
-// Function to calculate monthly earnings
 async function calculateMonthlyEarnings() {
     try {
         // Get the current year and month
@@ -38,18 +37,14 @@ async function calculateMonthlyEarnings() {
 }
 
 
-// Function to calculate annual earnings
 async function calculateAnnualEarnings() {
     try {
-        // Get the current year
         const currentDate = new Date();
         const year = currentDate.getFullYear();
 
-        // Set the start and end of the year
         const startOfYear = new Date(year, 0, 1);
         const endOfYear = new Date(year, 11, 31);
 
-        // Query orders created in the current year and with status 'จัดส่ง'
         const annualOrders = await Order.find({
             createdAt: {
                 $gte: startOfYear,
@@ -58,12 +53,10 @@ async function calculateAnnualEarnings() {
             orderStatus: 'จัดส่ง'
         });
 
-        // Calculate annual earnings
         const annualEarnings = annualOrders.reduce((total, order) => {
             return total + (order.totalCost || 0) ;
         }, 0);
 
-        // Return an array with a single element (the total earnings for the year)
         return [annualEarnings];
     } catch (error) {
         console.error('Error in calculating annual earnings:', error);
@@ -94,9 +87,8 @@ async function getMonthlyEarnings() {
 
     const result = await Order.aggregate(pipeline);
 
-    // แปลงข้อมูลให้เป็นรูปแบบที่เหมาะสมสำหรับการส่งไปยัง Frontend
     const monthlyEarnings = result.reduce((acc, curr) => {
-        const month = curr._id.month - 1; // เดือนใน JavaScript ใช้ 0-based index
+        const month = curr._id.month - 1;
         acc[month] = curr.total;
         return acc;
     }, new Array(12).fill(0));
@@ -108,26 +100,26 @@ async function bestSellingAll() {
     try {
         const result = await Order.aggregate([
             {
-                $match: {  // เพิ่มเงื่อนไขการจัดส่ง
-                    orderStatus: 'จัดส่ง'  // เฉพาะออเดอร์ที่จัดส่งแล้ว
+                $match: { 
+                    orderStatus: 'จัดส่ง' 
                 }
             },
-            { $unwind: "$items" },  // แยกแต่ละรายการสินค้าในออเดอร์
-            { $unwind: "$items.size" },  // แยกแต่ละขนาดสินค้า
+            { $unwind: "$items" }, 
+            { $unwind: "$items.size" }, 
             {
                 $group: {
                     _id: {
-                        product: "$items.product",  // กลุ่มตาม product ID
-                        size: "$items.size"  // กลุ่มตามขนาด
+                        product: "$items.product", 
+                        size: "$items.size"
                     },
-                    totalSold: { $sum: "$items.quantity" }  // รวมจำนวนสินค้าที่ขายได้
+                    totalSold: { $sum: "$items.quantity" } 
                 }
             },
-            { $sort: { totalSold: -1 } },  // เรียงลำดับจากมากไปน้อย
-            { $limit: 10 },  // เลือกเฉพาะ 10 อันดับแรก
+            { $sort: { totalSold: -1 } },  
+            { $limit: 10 }, 
             {
                 $lookup: {
-                    from: "products",  // เชื่อมโยงกับคอลเลกชัน Products
+                    from: "products", 
                     localField: "_id.product",
                     foreignField: "_id",
                     as: "productDetails"
@@ -138,7 +130,7 @@ async function bestSellingAll() {
                     productName: { $first: "$productDetails.productName" },
                     size: "$_id.size",
                     totalSold: 1,
-                    category: { $first: "$productDetails.category" }  // รวมข้อมูล category
+                    category: { $first: "$productDetails.category" } 
                 }
             }
         ]);
@@ -155,13 +147,10 @@ function calculateMembershipAge(createdAt) {
     const now = new Date();
     const registrationDate = new Date(createdAt);
     
-    // คำนวณความแตกต่างในมิลลิวินาที
     const diffInMs = now - registrationDate;
     
-    // แปลงเป็นวัน
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     
-    // แปลงเป็นปี, เดือน, วัน
     const years = Math.floor(diffInDays / 365);
     const months = Math.floor((diffInDays % 365) / 30);
     const days = diffInDays % 30;
@@ -170,10 +159,8 @@ function calculateMembershipAge(createdAt) {
 }
 
 async function newUserPerMonth() {
-    // เตรียม array ขนาด 12 สำหรับแต่ละเดือน (ม.ค. ถึง ธ.ค.)
     const newUsersCountByMonth = Array(12).fill(0);
 
-    // ดึงข้อมูลสมาชิกใหม่โดยใช้ aggregation pipeline
     const newUsers = await User.aggregate([
         {
             $group: {
@@ -189,13 +176,12 @@ async function newUserPerMonth() {
         }
     ]);
 
-    // วน loop ผลลัพธ์เพื่อใส่ข้อมูลลงใน array ของแต่ละเดือน
     newUsers.forEach(user => {
-        const monthIndex = user._id.month - 1; // -1 เพราะ array index เริ่มที่ 0
+        const monthIndex = user._id.month - 1;
         newUsersCountByMonth[monthIndex] = user.count;
     });
 
-    return newUsersCountByMonth; // ส่งกลับ array ขนาด 12
+    return newUsersCountByMonth;
 }
 
 
@@ -203,7 +189,7 @@ async function countNewAndReturningCustomers() {
     const customers = await User.aggregate([
         {
             $lookup: {
-                from: 'orders', // ค้นหา collection 'orders'
+                from: 'orders',
                 localField: '_id', 
                 foreignField: 'user', 
                 as: 'orderHistory' 
@@ -211,7 +197,7 @@ async function countNewAndReturningCustomers() {
         },
         {
             $addFields: {
-                orderCount: { $size: "$orderHistory" } // คำนวณจำนวน order ต่อผู้ใช้แต่ละคน
+                orderCount: { $size: "$orderHistory" } 
             }
         }
     ]);
