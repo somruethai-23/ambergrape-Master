@@ -39,6 +39,7 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="/user/profile/<%= user._id %>">โปรไฟล์</a></li>
+                            <li><a class="dropdown-item" href="/user/history">คำสั่งซื้อสินค้า</a></li>
                             <li><a class="dropdown-item" href="/auth/logout">ออกจากระบบ</a></li>
                         </ul>
                     </div>
@@ -69,25 +70,25 @@
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                     <% if (user && user.isAdmin === true) { %>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
+                            <a class="nav-link active fs-5" aria-current="page" href="/">ร้านค้า</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle fs-5" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 จัดการสินค้า
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item text-center" href="/admin/dashboard">แดชบอร์ด</a></li>  
+                                <li><a class="dropdown-item text-center fs-5" href="/admin/dashboard">แดชบอร์ด</a></li>  
                             </ul>
                         </li>
                     <% } else { %>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">ร้านค้า</a>
+                            <a class="nav-link active fs-5" aria-current="page" href="/">ร้านค้า</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/aboutus">เกี่ยวกับเรา</a>
+                            <a class="nav-link fs-5" href="/aboutus">เกี่ยวกับเรา</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/contactus">ติดต่อเรา</a>
+                            <a class="nav-link fs-5" href="/contactus">ติดต่อเรา</a>
                         </ul>
                     <% } %>
                 </div>
@@ -95,35 +96,3 @@
         </div>
     </nav>
 </div>
-  
-<style>
-    /* Make icons larger on smaller screens */
-    .navbar-icon {
-        font-size: 1.5rem; /* Default size for larger screens */
-    }
-  
-    @media (max-width: 767px) {
-        .navbar-icon {
-            font-size: 2rem; /* Larger size for smaller screens */
-        }
-    }
-  
-    /* Adjust navbar and input group for smaller screens */
-    @media (max-width: 767px) {
-        .navbar-brand img {
-            max-width: 80%; /* Make the logo smaller on smaller screens */
-        }
-  
-        .input-group {
-            max-width: 150px; /* Adjust search box width */
-        }
-  
-        .navbar-toggler {
-            margin-bottom: 10px; /* Adjust the toggle button */
-        }
-
-        .navbareverypage {
-            padding-top: 5px;
-        }
-    }
-</style>

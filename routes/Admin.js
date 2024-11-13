@@ -54,7 +54,9 @@ router.get('/manage-order', isAdmin, async (req,res)=> {
         select: 'productName'  
     }).populate('user'); 
 
-    return res.render('admin/orderManagement', { orders, dayjs, layout:false });
+    const finishedOrder = orders.some(order => order.orderStatus === 'จัดส่ง' && order.orderStatus === 'ยกเลิก');
+
+    return res.render('admin/orderManagement', { orders, dayjs, finishedOrder,layout:false });
 });
 
 router.post('/update-status/:id', async (req, res) => {

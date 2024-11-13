@@ -60,7 +60,6 @@
                     <% } else { %>
                         <table class="table table-striped table-bordered">
                             <thead class="thead-light">
-                                <% filteredOrders.forEach(order => { %>
                                 <tr>
                                     <th>หมายเลขคำสั่งซื้อ</th>
                                     <th>ลูกค้า</th>
@@ -68,13 +67,14 @@
                                     <th>ราคาทั้งหมด</th>
                                     <th>วันสั่งซื้อ</th>
                                     <th>หลักฐานการโอน</th>
-                                    <% if (order.orderStatus !== 'จัดส่ง' && order.orderStatus !== 'ยกเลิก') { %>
-                                    <th>สถานะต่อไป</th>
-                                    <th>ยกเลิก</th>
+                                    <% if (finishedOrder) { %>
+                                        <th>สถานะต่อไป</th>
+                                        <th>ยกเลิก</th>
                                     <% } %>
                                 </tr>
                             </thead>
                             <tbody id="orderTableBody">
+                                <% filteredOrders.forEach(order => { %>
                                     <tr>
                                         <td><%= order._id %></td>
                                         <td><%= order.user.username %></td>
