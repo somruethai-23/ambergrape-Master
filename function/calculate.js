@@ -71,7 +71,7 @@ async function getMonthlyEarnings() {
                     year: { $year: "$createdAt" },
                     month: { $month: "$createdAt" }
                 },
-                total: { $sum: { $add: ["$totalCost", "$shippingCost"] } }
+                total: { $sum: { $add: ["$totalCost"] } }
             }
         },
         {

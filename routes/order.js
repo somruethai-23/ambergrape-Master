@@ -13,7 +13,7 @@ const multer = require('multer');
 
 const storage = new Storage({
     projectId: process.env.project_ID,
-    keyFilename: path.resolve(__dirname, '../src/ambergrapeecommerce-firebase-adminsdk-5qyg1-4ae9158a1f.json'),
+    credentials: JSON.parse(process.env.FIREBASE_CREDENTIALS),
 });
 
 const bucket = storage.bucket(process.env.storage_BUCKET);
@@ -129,6 +129,7 @@ router.post('/confirm-payment/:orderId',  upload.single('slipImage'), async (req
 
         return res.redirect('/user/history');
     } catch (error) {
+        console.log(error);
         req.flash('error', 'มีปัญหาในการยืนยันการจ่ายเงิน');
         return res.redirect('/user/history');
     }

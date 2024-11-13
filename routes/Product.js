@@ -155,7 +155,6 @@ router.post('/edit-product/:productId', upload.array("images"),  isAdmin, async 
             return res.redirect('/admin/productManagement');
         }
 
-        // Delete selected images
         for (const imageUrl of deleteImages) {
             await deleteImageFromStorage(imageUrl);
             product.images = product.images.filter(image => image !== imageUrl);
