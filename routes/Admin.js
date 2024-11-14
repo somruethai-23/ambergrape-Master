@@ -91,14 +91,15 @@ router.post('/cancel-order/:id', async (req, res) => {
     try {
         const order = await Order.findById(id);
         if (!order) {
-            return res.status(404).send('Order not found');
+            req.flash('error', 'ไม่พบออเดอร์');
+            return res.redirect('/admin/manage-order');
         }
 
         order.orderStatus = 'ยกเลิก';
         order.cancelReason = reason;
         await order.save();
 
-        return res.redirect('/admin/manage-customer');
+        return res.redirect('/admin/manage-order');
     } catch (error) {
         req.flash('error', 'ไม่สามารถเปลี่ยนสถานะได้');
         return res.redirect('/admin/manage-order');
